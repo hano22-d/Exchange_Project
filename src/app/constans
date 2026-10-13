@@ -1,0 +1,25 @@
+# Data models :
+1- Cashboxes: 
+  {
+    currency,balance,opiningBalance,active,createdAt,updatedAt
+  }
+
+2- Exchanges: 
+ {
+   id,date,fromCurrency,toCurrency,fromAmount,toAmount,rate,note
+ }
+
+3- Transfer: 
+ {
+  id,date,fullName,currency,amount,destination,direction,note
+ }  
+
+4- Parties: 
+ {
+   id,fullName
+ }
+
+5- Depts: 
+ {
+  id,partyId,amount,currency,direction,note
+ } 
