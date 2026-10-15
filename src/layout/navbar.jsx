@@ -1,16 +1,21 @@
+import { Box } from "@mui/material";
 import { Link } from "react-router-dom";
+import "../styles/navbar.css";
 
 function Navbar() {
-    return (
-        <nav>
-            <ul>
-                <Link to="/">Home</Link>
-                <Link to="/operations">Operations</Link>
-                <Link to="/inventory">Inventory</Link>
-                <Link to="/archive">Archive</Link>
-                <Link to="/depts">Departments</Link>
-            </ul>
-        </nav>
-    );
+  return (
+    <Box className="navbar-box">
+      <Box className="logo">
+        <img src="src\assets\logo.png" />
+      </Box>
+      <Box className="navbar-links">
+        <Link to="/">الصفحة الرئيسية</Link>
+        <Link to="/operations">إجراء عملية</Link>
+        <Link to="/depts">الديون</Link>
+        <Link to="/inventory">الجرد</Link>
+        <Link to="/archive">الأرشيف</Link>
+      </Box>
+    </Box>
+  );
 }
 export default Navbar;
