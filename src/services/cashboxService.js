@@ -84,9 +84,9 @@ async function setCashboxActiveService(currency, active) {
   const db = await openDatabase();
   const transaction = db.transaction(["cashboxes"], "readwrite");
 
-  if (!active || typeof active !== "boolean") {
-    throw new Error("حدث خطأ");
-  }
+  if (typeof active !== "boolean") {
+  throw new Error("قيمة التفعيل غير صالحة");
+}
 
   await cashboxRepository.setCashboxActive(transaction, currency, active);
 
