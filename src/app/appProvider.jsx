@@ -1,10 +1,9 @@
 import CashboxProvider from "../context/cashboxContext";
 
-function AppProvider({children}) {
+export default function AppProvider({children}) {
     return(
         <CashboxProvider>
             {children}
         </CashboxProvider>
     )
 }
-export default AppProvider

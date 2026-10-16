@@ -1,12 +1,12 @@
 # Data models :
 1- Cashboxes: 
   {
-    currency,balance,opiningBalance,active,createdAt,updatedAt
+    currency,balance,opiningBalance,active,date,updatedAt
   }
 
 2- Exchanges: 
  {
-   id,date,fromCurrency,toCurrency,fromAmount,toAmount,rate,note
+   id,date,updatedAt,fromCurrency,toCurrency,fromAmount,toAmount,rate,note
  }
 
 3- Transfer: 

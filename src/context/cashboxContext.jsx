@@ -5,8 +5,8 @@ import cashboxService from "../services/cashboxService";
 
 export const CashboxContext = createContext(null);
 
-function CashboxProvider({ children }) {
-  const [cashboxs, setCashboxes] = useState(null);
+export default function CashboxProvider({ children }) {
+  const [cashboxes, setCashboxes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setEror] = useState(null);
 
@@ -34,11 +34,16 @@ function CashboxProvider({ children }) {
 
   // ======== context بيانات ====== //
   const value = useMemo(() => {
-    cashboxs, setCashboxes, loading, error, getCashboxes;
-  }, [cashboxs, loading, error, getCashboxes]);
+    return {
+      cashboxes,
+      setCashboxes,
+      loading,
+      error,
+      getCashboxes,
+    };
+  }, [cashboxes, loading, error, getCashboxes]);
 
   return (
     <CashboxContext.Provider value={value}>{children}</CashboxContext.Provider>
   );
 }
-export default CashboxProvider
