@@ -5,15 +5,15 @@ import "../styles/navbar.css";
 function Navbar() {
   return (
     <Box className="navbar-box">
-      <Box className="logo">
-        <img src="src\assets\logo.png" />
-      </Box>
       <Box className="navbar-links">
         <Link to="/">الصفحة الرئيسية</Link>
         <Link to="/operations">إجراء عملية</Link>
         <Link to="/depts">الديون</Link>
         <Link to="/inventory">الجرد</Link>
         <Link to="/archive">الأرشيف</Link>
+      </Box>
+      <Box className="logo">
+        <img src="src\assets\logo.png" />
       </Box>
     </Box>
   );

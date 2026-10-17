@@ -16,7 +16,7 @@ function normalizedCashboxForm(dataForm) {
     currency: dataForm.currency?.trim().toUpperCase(),
     balance: Number(dataForm.balance),
     opiningBalance: Number(dataForm.balance),
-    createdAt: Date.now(),
+    date: Date.now(),
     updatedAt: Date.now(),
   };
 
@@ -55,7 +55,7 @@ async function getAllCashboxesService() {
   const db = await openDatabase();
   const transaction = db.transaction(["cashboxes"], "readonly");
 
-  return await cashboxRepository.getAllCshboxes(transaction);
+  return await cashboxRepository.getAllCashboxes(transaction);
 }
 
 // ========== دالة قراءة صندوق حسب العملة ========== //
@@ -77,6 +77,8 @@ async function addCashboxService(newCashbox) {
   await cashboxRepository.addCashbox(transaction, normalizedCashbox);
 
   await waitForTransactionCompletion(transaction);
+
+  return normalizedCashbox
 }
 
 // ============ دالة تعطيل / تفعيل صندوق ========== //

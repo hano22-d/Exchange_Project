@@ -5,7 +5,7 @@ const CASHBOX_Object_STORE = "cashboxes";
 /* ========================= 
     دالة جلب جميع الصناديق
    ========================= */
-function getAllCshboxes(transaction) {
+function getAllCashboxes(transaction) {
   const store = transaction.objectStore(CASHBOX_Object_STORE);
 
   const request = store.getAll();
@@ -81,7 +81,7 @@ async function setCashboxActive(transaction, currency, active) {
 }
 
 const cashboxRepository = {
-  getAllCshboxes,
+  getAllCashboxes,
   getCashboxByCurrency,
   addCashbox,
   adjustCashboxBalance,

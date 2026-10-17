@@ -14,7 +14,7 @@ function useCashboxActions() {
   const [updatingError, setUpdatingError] = useState(null);
 
   // ====== دالة الإضافة ===== //
-  const addCshbox = useCallback(
+  const addCashbox = useCallback(
     async (cashbox) => {
       setAdding(true);
       setAddErroe(null);
@@ -61,7 +61,7 @@ function useCashboxActions() {
   );
 
   return {
-    addCshbox,
+    addCashbox,
     adding,
     addError,
 
