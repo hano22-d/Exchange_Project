@@ -1,6 +1,7 @@
 import { Grid, Card, Typography, Box, Divider, Button } from "@mui/material";
 import { FaCoins } from "react-icons/fa";
 import { FaVault } from "react-icons/fa6";
+import { SY, US, TR, IQ, CH, EU } from "country-flag-icons/react/3x2";
 
 export default function Home() {
   const information = [
@@ -8,31 +9,37 @@ export default function Home() {
       cashBoxCategorySymbol: "SYP",
       cashBoxCategoryName: "ليرة سورية",
       CurrentBalance: "85000000",
+      countryFlag: <SY style={{ width: "40px", borderRadius: 4 }} />,
     },
     {
       cashBoxCategorySymbol: "USD",
       cashBoxCategoryName: "دولار أمريكي",
       CurrentBalance: "27200",
+      countryFlag: <US style={{ width: "40px", borderRadius: 4 }} />,
     },
     {
       cashBoxCategorySymbol: "EUR",
       cashBoxCategoryName: " يورو أوروبي",
       CurrentBalance: "8600",
+      countryFlag: <EU style={{ width: "40px", borderRadius: 4 }} />,
     },
     {
-      cashBoxCategorySymbol: "TUR",
+      cashBoxCategorySymbol: "TRY",
       cashBoxCategoryName: "ليرة تركية",
       CurrentBalance: "15000",
+      countryFlag: <TR style={{ width: "40px", borderRadius: 4 }} />,
     },
     {
       cashBoxCategorySymbol: "IQD",
       cashBoxCategoryName: "دينار عراقي",
       CurrentBalance: "158000",
+      countryFlag: <IQ style={{ width: "40px", borderRadius: 4 }} />,
     },
     {
       cashBoxCategorySymbol: "CHF",
       cashBoxCategoryName: "فرنك سويسري",
       CurrentBalance: "12000",
+      countryFlag: <CH style={{ width: "40px", borderRadius: 4 }} />,
     },
   ];
   return (
@@ -42,17 +49,36 @@ export default function Home() {
         mt: 3,
       }}
     >
-      <Box sx={{ display: "flex" }}>
-        <FaCoins style={{ marginLeft: 10, fontSize: 25, color: "gold" }} />{" "}
-        <Typography
-          variant="h6"
+      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Box sx={{ display: "flex" }}>
+          <FaCoins style={{ marginLeft: 10, fontSize: 25, color: "gold" }} />{" "}
+          <Typography
+            variant="h6"
+            sx={{
+              color: "white",
+              fontFamily: "'Alyamama', sans-serif",
+            }}
+          >
+            أرصدة الصناديق الحالية
+          </Typography>
+        </Box>
+        <Button
+          variant="outlined"
           sx={{
-            color: "white",
-            fontFamily: "'Alyamama', sans-serif",
+            p: "10px 25px",
+            ml: 2,
+            borderColor: "rgba(250, 229, 110, 0.992)",
+            color: "rgba(250, 229, 110, 0.992)",
+            "&:hover": {
+              backgroundColor: "rgba(250, 229, 110, 0.16)"
+            }
           }}
         >
-          أرصدة الصناديق الحالية
-        </Typography>
+         <Typography sx={{fontFamily: "'Alyamama', sans-serif", pl: 1}}>
+          إضافة صندوق
+         </Typography>
+         <FaVault style={{fontSize: 15}}/>
+        </Button>
       </Box>
 
       <Grid
@@ -81,7 +107,7 @@ export default function Home() {
               key={index}
               sx={{
                 width: "94%",
-                height: "225px",
+                height: "240px",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
@@ -120,13 +146,7 @@ export default function Home() {
                     {item.cashBoxCategoryName}
                   </Typography>
                 </Box>
-                <FaVault
-                  style={{
-                    fontSize: 25,
-                    color: "rgba(250, 229, 110, 0.992)",
-                    margin: 5,
-                  }}
-                />
+                {item.countryFlag}
               </Box>
               <Box
                 sx={{
@@ -149,16 +169,16 @@ export default function Home() {
                   <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
                     <Typography
                       sx={{
-                        fontSize: 22,
+                        fontSize: 35,
                         fontWeight: "bold",
                         color: "rgba(250, 229, 110, 0.992)",
                       }}
                     >
                       {Number(
                         item.CurrentBalance.replace(/,/g, ""),
-                      ).toLocaleString('ar-SA')}
+                      ).toLocaleString()}
                     </Typography>
-                    <Typography sx={{ color: "white" }}>
+                    <Typography sx={{ fontSize: 25, color: "white" }}>
                       {item.cashBoxCategorySymbol}
                     </Typography>
                   </Box>
@@ -174,8 +194,8 @@ export default function Home() {
                 >
                   <Typography
                     sx={{
-                      backgroundColor: "rgba(250, 229, 110, 0.992)",
-                      p: 0.5,
+                      backgroundColor: "#00d443",
+                      p: 0.7,
                       borderRadius: 6,
                       fontFamily: "'Alyamama', sans-serif",
                     }}
