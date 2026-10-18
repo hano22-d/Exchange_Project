@@ -195,3 +195,13 @@ export async function queryExchanges(transaction, filters = {}) {
 
   return filteredExchanges;
 }
+
+const exchangeRpository = {
+  queryExchanges,
+  getExchangeById,
+  addExchange,
+  updateExchange,
+  deleteExchange
+}
+
+export default exchangeRpository
