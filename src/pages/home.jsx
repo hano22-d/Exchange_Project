@@ -1,11 +1,12 @@
-import { Grid, Card, Typography, Box, Divider, Button } from "@mui/material";
-import { FaCoins } from "react-icons/fa";
+import { Typography, Box, Button } from "@mui/material";
+import { FaChartLine, FaCoins } from "react-icons/fa";
 import { FaVault } from "react-icons/fa6";
-import { SY, US, TR, IQ, CH, EU } from "country-flag-icons/react/3x2";
 import { useState } from "react";
 import AddCashboxDialog from "../featuers/exchange/cashbox/addCashboxDialog";
 import useCashboxActions from "../hooks/cashbox_Hooks/useCashboxActions";
 import BasicToast from "../shared/ui/toast";
+import Boxes from "../featuers/exchange/cashbox/boxes_home";
+import Statistics from "../featuers/exchange/cashbox/statistics";
 
 export default function Home() {
   //حالة فتح وإقلاق dialog
@@ -13,13 +14,11 @@ export default function Home() {
   //hook اضافة صندوق
   const { addCashbox, adding } = useCashboxActions();
 
-  const [toastState,setToastState] = useState({
+  const [toastState, setToastState] = useState({
     open: false,
-    message: '',
-    saverity: 'success'
-  })
-
-
+    message: "",
+    saverity: "success",
+  });
 
   // دالة إضافة صندوق
   async function createCashbox(currency, balance) {
@@ -33,8 +32,8 @@ export default function Home() {
       setToastState({
         open: true,
         message: "تم إنشاء وحفظ الصندوق بنجاح",
-        saverity: "success"
-      })
+        saverity: "success",
+      });
 
       console.log("تمت اضافة الحركة بنجاح");
 
@@ -43,45 +42,6 @@ export default function Home() {
       console.log(`فشل اضافة الحركة ${error}`);
     }
   }
-
-  const information = [
-    {
-      cashBoxCategorySymbol: "SYP",
-      cashBoxCategoryName: "ليرة سورية",
-      CurrentBalance: "85000000",
-      countryFlag: <SY style={{ width: "40px", borderRadius: 4 }} />,
-    },
-    {
-      cashBoxCategorySymbol: "USD",
-      cashBoxCategoryName: "دولار أمريكي",
-      CurrentBalance: "27200",
-      countryFlag: <US style={{ width: "40px", borderRadius: 4 }} />,
-    },
-    {
-      cashBoxCategorySymbol: "EUR",
-      cashBoxCategoryName: " يورو أوروبي",
-      CurrentBalance: "8600",
-      countryFlag: <EU style={{ width: "40px", borderRadius: 4 }} />,
-    },
-    {
-      cashBoxCategorySymbol: "TRY",
-      cashBoxCategoryName: "ليرة تركية",
-      CurrentBalance: "15000",
-      countryFlag: <TR style={{ width: "40px", borderRadius: 4 }} />,
-    },
-    {
-      cashBoxCategorySymbol: "IQD",
-      cashBoxCategoryName: "دينار عراقي",
-      CurrentBalance: "158000",
-      countryFlag: <IQ style={{ width: "40px", borderRadius: 4 }} />,
-    },
-    {
-      cashBoxCategorySymbol: "CHF",
-      cashBoxCategoryName: "فرنك سويسري",
-      CurrentBalance: "12000",
-      countryFlag: <CH style={{ width: "40px", borderRadius: 4 }} />,
-    },
-  ];
 
   return (
     <Box
@@ -96,8 +56,12 @@ export default function Home() {
         onConfirm={createCashbox}
         loading={adding}
       />
-      
-       <BasicToast open={toastState.open} message={toastState.message} saverity={toastState.saverity}/>
+
+      <BasicToast
+        open={toastState.open}
+        message={toastState.message}
+        saverity={toastState.saverity}
+      />
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex" }}>
@@ -132,140 +96,27 @@ export default function Home() {
         </Button>
       </Box>
 
-      <Grid
-        container
-        spacing={{ xs: 2, md: 3 }}
-        columns={{ xs: 4, sm: 8, md: 12 }}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          my: 3,
-        }}
-      >
-        {information.map((item, index) => (
-          <Card
-            key={index}
+      <Boxes />
+
+      <Box sx={{ mt: 3 }}>
+        <Box sx={{ display: "flex" }}>
+          <FaChartLine
+            style={{ marginLeft: 10, fontSize: 25, color: "#00ff15" }}
+          />
+          <Typography
+            variant="h6"
             sx={{
-              width: "31.5%",
-              display: "flex",
-              justifyContent: "flex-end",
-              backgroundColor: "rgba(250, 229, 110, 0.992)",
-              borderRadius: 4,
-              border: "1px solid rgba(250, 229, 110, 0.992)",
+              color: "white",
+              fontFamily: "'Alyamama', sans-serif",
             }}
           >
-            <Card
-              sx={{
-                width: "94%",
-                height: "240px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                backgroundColor: "#232323",
-                p: 1,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                  }}
-                >
-                  <Typography
-                    sx={{ fontSize: 25, fontWeight: "bold", color: "white" }}
-                  >
-                    {item.cashBoxCategorySymbol}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: "#c8c8c8",
-                      backgroundColor: "#4e4e4e",
-                      p: 1,
-                      borderRadius: 25,
-                      fontSize: 13,
-                    }}
-                  >
-                    {item.cashBoxCategoryName}
-                  </Typography>
-                </Box>
-                {item.countryFlag}
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  gap: 1,
-                }}
-              >
-                <Box>
-                  <Typography
-                    sx={{
-                      fontSize: 18,
-                      color: "white",
-                      fontFamily: "'Alyamama', sans-serif",
-                    }}
-                  >
-                    الرصيد الحالي:
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
-                    <Typography
-                      sx={{
-                        fontSize: 35,
-                        fontWeight: "bold",
-                        color: "rgba(250, 229, 110, 0.992)",
-                      }}
-                    >
-                      {Number(
-                        item.CurrentBalance.replace(/,/g, "")
-                      ).toLocaleString()}
-                    </Typography>
-                    <Typography sx={{ fontSize: 25, color: "white" }}>
-                      {item.cashBoxCategorySymbol}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Divider color={"white"} />
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    my: 1,
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      backgroundColor: "#00d443",
-                      p: 0.7,
-                      borderRadius: 6,
-                      fontFamily: "'Alyamama', sans-serif",
-                    }}
-                  >
-                    رصيد طبيعي
-                  </Typography>
-                  <Button
-                    sx={{
-                      fontFamily: "'Alyamama', sans-serif",
-                    }}
-                  >
-                    تفاصيل ←
-                  </Button>
-                </Box>
-              </Box>
-            </Card>
-          </Card>
-        ))}
-      </Grid>
+            نشاط وإحصائيات اليوم
+          </Typography>
+        </Box>
+
+        <Statistics/>
+
+      </Box>
     </Box>
   );
 }
