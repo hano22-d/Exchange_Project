@@ -2,8 +2,48 @@ import { Grid, Card, Typography, Box, Divider, Button } from "@mui/material";
 import { FaCoins } from "react-icons/fa";
 import { FaVault } from "react-icons/fa6";
 import { SY, US, TR, IQ, CH, EU } from "country-flag-icons/react/3x2";
+import { useState } from "react";
+import AddCashboxDialog from "../featuers/exchange/cashbox/addCashboxDialog";
+import useCashboxActions from "../hooks/cashbox_Hooks/useCashboxActions";
+import BasicToast from "../shared/ui/toast";
 
 export default function Home() {
+  //حالة فتح وإقلاق dialog
+  const [open, setOpen] = useState(false);
+  //hook اضافة صندوق
+  const { addCashbox, adding } = useCashboxActions();
+
+  const [toastState,setToastState] = useState({
+    open: false,
+    message: '',
+    saverity: 'success'
+  })
+
+
+
+  // دالة إضافة صندوق
+  async function createCashbox(currency, balance) {
+    const newCshbox = {
+      currency,
+      balance,
+    };
+    try {
+      await addCashbox(newCshbox);
+
+      setToastState({
+        open: true,
+        message: "تم إنشاء وحفظ الصندوق بنجاح",
+        saverity: "success"
+      })
+
+      console.log("تمت اضافة الحركة بنجاح");
+
+      setOpen(false);
+    } catch (error) {
+      console.log(`فشل اضافة الحركة ${error}`);
+    }
+  }
+
   const information = [
     {
       cashBoxCategorySymbol: "SYP",
@@ -42,6 +82,7 @@ export default function Home() {
       countryFlag: <CH style={{ width: "40px", borderRadius: 4 }} />,
     },
   ];
+
   return (
     <Box
       sx={{
@@ -49,6 +90,15 @@ export default function Home() {
         mt: 3,
       }}
     >
+      <AddCashboxDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onConfirm={createCashbox}
+        loading={adding}
+      />
+      
+       <BasicToast open={toastState.open} message={toastState.message} saverity={toastState.saverity}/>
+
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex" }}>
           <FaCoins style={{ marginLeft: 10, fontSize: 25, color: "gold" }} />{" "}
@@ -63,6 +113,7 @@ export default function Home() {
           </Typography>
         </Box>
         <Button
+          onClick={() => setOpen(true)}
           variant="outlined"
           sx={{
             p: "10px 25px",
@@ -70,14 +121,14 @@ export default function Home() {
             borderColor: "rgba(250, 229, 110, 0.992)",
             color: "rgba(250, 229, 110, 0.992)",
             "&:hover": {
-              backgroundColor: "rgba(250, 229, 110, 0.16)"
-            }
+              backgroundColor: "rgba(250, 229, 110, 0.16)",
+            },
           }}
         >
-         <Typography sx={{fontFamily: "'Alyamama', sans-serif", pl: 1}}>
-          إضافة صندوق
-         </Typography>
-         <FaVault style={{fontSize: 15}}/>
+          <Typography sx={{ fontFamily: "'Alyamama', sans-serif", pl: 1 }}>
+            إضافة صندوق
+          </Typography>
+          <FaVault style={{ fontSize: 15 }} />
         </Button>
       </Box>
 
@@ -94,6 +145,7 @@ export default function Home() {
       >
         {information.map((item, index) => (
           <Card
+            key={index}
             sx={{
               width: "31.5%",
               display: "flex",
@@ -104,7 +156,6 @@ export default function Home() {
             }}
           >
             <Card
-              key={index}
               sx={{
                 width: "94%",
                 height: "240px",
@@ -175,7 +226,7 @@ export default function Home() {
                       }}
                     >
                       {Number(
-                        item.CurrentBalance.replace(/,/g, ""),
+                        item.CurrentBalance.replace(/,/g, "")
                       ).toLocaleString()}
                     </Typography>
                     <Typography sx={{ fontSize: 25, color: "white" }}>
