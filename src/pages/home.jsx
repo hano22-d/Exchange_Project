@@ -7,24 +7,32 @@ import useCashboxActions from "../hooks/cashbox_Hooks/useCashboxActions";
 import BasicToast from "../shared/ui/toast";
 import Boxes from "../featuers/exchange/cashbox/boxes_home";
 import Statistics from "../featuers/exchange/cashbox/statistics";
+import useCashboxces from "../hooks/cashbox_Hooks/usecashboxes";
+import { getSupportedCurrency } from "../shared/currencydata/currencies";
 
 export default function Home() {
   //حالة فتح وإقلاق dialog
   const [open, setOpen] = useState(false);
-  //hook اضافة صندوق
-  const { addCashbox, adding } = useCashboxActions();
 
+  //حالة ادارة التوست
   const [toastState, setToastState] = useState({
     open: false,
     message: "",
-    saverity: "success",
+    severity: "success",
   });
 
+  //hook اضافة صندوق
+  const { addCashbox, adding } = useCashboxActions();
+  //hook جلب الصناديق
+  const { cashboxes, loading, error } = useCashboxces();
+
+  
   // دالة إضافة صندوق
   async function createCashbox(currency, balance) {
     const newCshbox = {
       currency,
       balance,
+      currencyNameAr: getSupportedCurrency(currency).nameAr,
     };
     try {
       await addCashbox(newCshbox);
@@ -32,14 +40,17 @@ export default function Home() {
       setToastState({
         open: true,
         message: "تم إنشاء وحفظ الصندوق بنجاح",
-        saverity: "success",
+        severity: "success",
       });
-
-      console.log("تمت اضافة الحركة بنجاح");
 
       setOpen(false);
     } catch (error) {
       console.log(`فشل اضافة الحركة ${error}`);
+      setToastState({
+        open: true,
+        message: `فشل إضافة الصندوق`,
+        severity: "error",
+      });
     }
   }
 
@@ -50,6 +61,7 @@ export default function Home() {
         mt: 3,
       }}
     >
+      {/*نافذة إضافة صندوق*/}
       <AddCashboxDialog
         open={open}
         onClose={() => setOpen(false)}
@@ -57,11 +69,15 @@ export default function Home() {
         loading={adding}
       />
 
+      {/*رسالة نجاح او فشل عملية إضافة صندوق*/}
       <BasicToast
         open={toastState.open}
+        onClose={() => setToastState((prev) => ({ ...prev, open: false }))}
         message={toastState.message}
-        saverity={toastState.saverity}
+        severity={toastState.severity}
       />
+
+      {/*المكونات الرئيسية*/}
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex" }}>
@@ -96,7 +112,7 @@ export default function Home() {
         </Button>
       </Box>
 
-      <Boxes />
+      <Boxes cashboxes={cashboxes} loading={loading} error={error} />
 
       <Box sx={{ mt: 3 }}>
         <Box sx={{ display: "flex" }}>
@@ -114,8 +130,7 @@ export default function Home() {
           </Typography>
         </Box>
 
-        <Statistics/>
-
+        <Statistics />
       </Box>
     </Box>
   );

@@ -1,0 +1,259 @@
+/* =========================================
+   التنسيقات الأساسية للإيصال
+   ========================================= */
+
+   .receipt-print-root,
+   .receipt-print-root * {
+     box-sizing: border-box;
+   }
+   
+   .receipt-print-root {
+     /* مخفي أثناء استخدام الموقع العادي */
+     display: none;
+   
+     direction: rtl;
+     width: 72mm;
+     padding: 4mm 2mm; 
+   
+     background: #ffffff;
+     color: #111111;
+   
+     font-family: Tahoma, Arial, sans-serif;
+     font-size: 12px;
+     line-height: 1.6;
+   
+     overflow-wrap: anywhere;
+   }
+   
+   /* =========================================
+      رأس الإيصال والشعار
+      ========================================= */
+   
+   .receipt-header {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     text-align: center;
+     margin-top: 50px; 
+   }
+   
+   .receipt-logo {
+     width: 56px;
+     height: 56px;
+     margin: 0 auto 4px;
+   
+     display: flex;
+     align-items: center;
+     justify-content: center;
+   
+     color: #111111;
+   }
+   
+   .receipt-logo svg {
+     display: block;
+     width: 100%;
+     height: 100%;
+   }
+   
+   .receipt-shop-name {
+     width: 100%;
+     margin: 0;
+   
+     color: #000000;
+     font-size: 19px;
+     font-weight: 800;
+     line-height: 1.5;
+     text-align: center;
+   }
+   
+   .receipt-title {
+     margin: 3px 0 0;
+   
+     font-size: 15px;
+     font-weight: 700;
+     text-align: center;
+   }
+   
+   /* =========================================
+      الفواصل
+      ========================================= */
+   
+   .receipt-divider {
+     width: 100%;
+     margin: 8px 0;
+   
+     border: 0;
+     border-top: 1px dashed #555555;
+   }
+   
+   /* =========================================
+      بيانات العملية
+      ========================================= */
+   
+   .receipt-meta {
+     display: flex;
+     flex-direction: column;
+     gap: 5px;
+   }
+   
+   .receipt-meta-row {
+     display: flex;
+     align-items: baseline;
+     justify-content: space-between;
+     gap: 8px;
+   
+     width: 100%;
+     font-size: 11px;
+   }
+   
+   .receipt-meta-row > span:first-child {
+     flex-shrink: 0;
+   }
+   
+   .receipt-meta-value {
+     font-weight: 700;
+     text-align: left;
+     overflow-wrap: anywhere;
+   }
+   
+   /* =========================================
+      المبالغ المالية
+      ========================================= */
+   
+   .receipt-amount-block {
+     width: 100%;
+     margin: 9px 0;
+   
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     gap: 2px;
+   
+     text-align: center;
+   }
+   
+   .receipt-field-label {
+     margin: 0;
+     font-size: 11px;
+     font-weight: 400;
+   }
+   
+   .receipt-amount {
+     display: block;
+     max-width: 100%;
+   
+     color: #000000;
+     font-size: 18px;
+     font-weight: 800;
+     line-height: 1.5;
+   
+     text-align: center;
+     overflow-wrap: anywhere;
+   }
+   
+   /* =========================================
+      الملاحظات
+      ========================================= */
+   
+   .receipt-note {
+     width: 100%;
+   }
+   
+   .receipt-note-value {
+     margin: 4px 0 0;
+   
+     font-size: 11px;
+     line-height: 1.7;
+   
+     white-space: pre-wrap;
+     overflow-wrap: anywhere;
+   }
+   
+   /* =========================================
+      تذييل الإيصال (Footer)
+      ========================================= */
+   
+   .receipt-footer {
+     text-align: center;
+     font-size: 10px;
+     margin-top: 80px; 
+     padding-bottom: 50px;
+   }
+   
+   .receipt-footer p {
+     margin: 4px 0;
+   }
+   
+   .receipt-thanks {
+     font-size: 12px;
+     font-weight: 700;
+   }
+   
+   .receipt-shop-footer {
+     font-weight: 700;
+   }
+   
+   /* =========================================
+      قواعد الطباعة فقط
+      ========================================= */
+   
+   @media print {
+     @page {
+       margin: 0;
+       size: auto;
+     }
+   
+     html,
+     body {
+       margin: 0 !important;
+       padding: 0 !important;
+   
+       background: #ffffff !important;
+     }
+   
+     body > *:not(.receipt-print-root) {
+       display: none !important;
+     }
+   
+     body > .receipt-print-root {
+       display: block !important;
+   
+       width: 72mm !important;
+       max-width: 72mm !important;
+       margin: 0 !important;
+       padding: 4mm 2mm !important;
+   
+       background: #ffffff !important;
+       color: #000000 !important;
+   
+       font-family: Tahoma, Arial, sans-serif !important;
+       font-size: 12px !important;
+       line-height: 1.6 !important;
+   
+       box-shadow: none !important;
+       overflow: visible !important;
+   
+       -webkit-print-color-adjust: exact;
+       print-color-adjust: exact;
+     }
+   
+     /* الحفاظ على وضوح اسم المكتب */
+     .receipt-shop-name {
+       color: #000000 !important;
+       font-size: 19px !important;
+       font-weight: 800 !important;
+     }
+   
+     .receipt-logo {
+       color: #000000 !important;
+     }
+   
+     /* منع كسر الأقسام المهمة بين صفحتين */
+     .receipt-header,
+     .receipt-amount-block,
+     .receipt-note,
+     .receipt-footer {
+       break-inside: avoid;
+       page-break-inside: avoid;
+     }
+   }

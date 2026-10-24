@@ -14,10 +14,12 @@ function normalizedCashboxForm(dataForm) {
 
   const fullData = {
     currency: dataForm.currency?.trim().toUpperCase(),
+    currencyNameAr: dataForm.currencyNameAr?.trim().toUpperCase(),
     balance: Number(dataForm.balance),
     opiningBalance: Number(dataForm.balance),
     date: Date.now(),
     updatedAt: Date.now(),
+    active: true
   };
 
   return fullData;

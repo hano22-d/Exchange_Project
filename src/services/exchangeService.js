@@ -5,7 +5,7 @@ import { waitForTransactionCompletion } from "../db/transaction.js";
 import {
   buildTimestampDateRange,
   getTimestampFromDateTimeLocal,
-} from "../shared/utils/date.utils.js";
+} from "../shared/utilsDate.js";
 
 import exchangeRpository from "../repositories/exchangeRepository.js";
 import cashboxRepository from "../repositories/cashboxrepository.js";
@@ -119,7 +119,10 @@ function validateExchangeInput(exchange) {
 
   const pairKey = `${exchange.fromCurrency}-${exchange.toCurrency}`;
 
-  const calculationType = getExchangeCalculationType(exchange.fromCurrency,exchange.toCurrency)
+  const calculationType = getExchangeCalculationType(
+    exchange.fromCurrency,
+    exchange.toCurrency
+  );
 
   if (!calculationType) {
     throw new Error(`Unsupported currency pair: ${pairKey}`);
@@ -393,11 +396,16 @@ export async function createExchangeService(formData) {
         updatedAt: now,
       };
 
-      // إضافة سجل الحركة.
-      const createdExchange = await exchangeRpository.addExchange(
+      //الخاص به id اضافة سجل الحركة والحصول على
+      const createdExchangeID = await exchangeRpository.addExchange(
         tx,
         newExchange
       );
+
+      const createdExchange = {
+        ...newExchange,
+        id: createdExchangeID,
+      };
 
       // حساب أثر الحركة وتطبيقه على الصناديق.
       const deltas = calculateCashboxDeltas({

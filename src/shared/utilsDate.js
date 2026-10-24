@@ -269,14 +269,14 @@ export function getTimestampFromDateTimeLocal(
 }
 
 // تنسيق التاريخ والساعة والدقائق وفق توقيت سوريا (تستخدم اثناءالعرض)
-export function formatSyriaDateTime(timestamp, locale = "ar-SY") {
+export function formatSyriaDateTime(timestamp, locale = "en-SY") {
   if (!Number.isFinite(timestamp)) {
     return "";
   }
 
   return new Date(timestamp).toLocaleString(locale, {
     year: "numeric",
-    month: "short",
+    month: "2-digit",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",

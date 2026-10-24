@@ -4,11 +4,16 @@ import { requestToPromise } from "../shared/utilsDB";
 const EXCHANGE_OBJECT_STORE = "exchanges";
 
 // ========== دوال العمليات الأساسية ========== //
-async function getAllExchanges(transaction) {
-  const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const request = store.getAll();
+export async function getAllExchanges(tx) {
+  const store = tx.objectStore(EXCHANGE_OBJECT_STORE);
 
-  return await requestToPromise(request);
+  console.log("[Repository] store name:", store.name);
+
+  const result = await requestToPromise(store.getAll());
+
+  console.log("[Repository] raw records:", result);
+
+  return result;
 }
 
 async function getExchangeById(transaction, id) {
@@ -117,24 +122,37 @@ export function choosePrimaryQuery(filters) {
 
 // ========== دالة تطبيق الفلاتر المتبقية =========== //
 export function applyRamainingFilters(exchanges, primaryQuery, filters = {}) {
-  const { fromCurrency, toCurrency, fromTimeStamp, toTimeStamp, note } =
-    filters;
+  const {
+    fromCurrency,
+    toCurrency,
+    dateFromTimestamp,
+    dateToExclusiveTimestamp,
+    note,
+  } = filters;
 
-  exchanges.filters((exchange) => {
+  return exchanges.filter((exchange) => {
     if (
+      fromCurrency &&
       primaryQuery !== "fromCurrency" &&
       exchange.fromCurrency !== fromCurrency
     ) {
       return false;
     }
-    if (primaryQuery !== "toCurrency" && exchange.toCurrency !== toCurrency) {
+    if (
+      toCurrency &&
+      primaryQuery !== "toCurrency" &&
+      exchange.toCurrency !== toCurrency
+    ) {
       return false;
     }
     if (primaryQuery !== "dateRange") {
-      if (fromTimeStamp && exchange.date < fromTimeStamp) {
+      if (dateFromTimestamp && exchange.date < dateFromTimestamp) {
         return false;
       }
-      if (toTimeStamp && exchange.date >= toTimeStamp) {
+      if (
+        dateToExclusiveTimestamp &&
+        exchange.date >= dateToExclusiveTimestamp
+      ) {
         return false;
       }
     }
@@ -189,8 +207,8 @@ export async function queryExchanges(transaction, filters = {}) {
 
   const filteredExchanges = applyRamainingFilters(
     exchanges,
-    primaryQuery,
-    filters
+    filters,
+    primaryQuery
   );
 
   return filteredExchanges;
@@ -201,7 +219,7 @@ const exchangeRpository = {
   getExchangeById,
   addExchange,
   updateExchange,
-  deleteExchange
-}
+  deleteExchange,
+};
 
-export default exchangeRpository
+export default exchangeRpository;

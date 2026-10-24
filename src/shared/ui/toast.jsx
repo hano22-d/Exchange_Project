@@ -1,13 +1,20 @@
 import { Alert, Snackbar } from "@mui/material";
 
-function BasicToast({ open, message, saverity = "success" }) {
+function BasicToast({ open, onClose, message, severity = "success" }) {
   return (
     <>
-      <Snackbar open={open} autoHideDuration={3000} anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}>
+      <Snackbar
+        open={open}
+        onClose={onClose}
+        autoHideDuration={3000}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
         <Alert
-          saverity={saverity}
+          severity={severity}
           variant="filled"
-          sx={{ width: "100%" }}
+          sx={{
+            width: "100%",
+          }}
         >
           {message}
         </Alert>
