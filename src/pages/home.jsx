@@ -9,6 +9,7 @@ import Boxes from "../featuers/exchange/cashbox/boxes_home";
 import Statistics from "../featuers/exchange/cashbox/statistics";
 import useCashboxces from "../hooks/cashbox_Hooks/usecashboxes";
 import { getSupportedCurrency } from "../shared/currencydata/currencies";
+import LastOper from "../featuers/exchange/cashbox/lastOperations_home";
 
 export default function Home() {
   //حالة فتح وإقلاق dialog
@@ -131,6 +132,7 @@ export default function Home() {
         </Box>
 
         <Statistics />
+        <LastOper/>
       </Box>
     </Box>
   );
