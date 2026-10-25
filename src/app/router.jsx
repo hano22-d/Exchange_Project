@@ -5,6 +5,9 @@ import Inventory from "../pages/inventory";
 import Archive from "../pages/archive";
 import Depts from "../pages/depts";
 import MainLayout from "./mainLayout";
+import Exchange from "../featuers/exchange/cashbox/exchange_operations";
+import Transfer from "../featuers/exchange/cashbox/transfer_operations";
+import Dept from "../featuers/exchange/cashbox/dept_operations";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +21,20 @@ export const router = createBrowserRouter([
       {
         path: "operations",
         element: <Operations />,
+        children: [
+        {
+          index: true,
+          element: <Exchange/>
+        },
+        {
+          path: 'transfer',
+          element: <Transfer/>
+        },
+        {
+          path: 'dept',
+          element: <Dept/>
+        }
+        ]
       },
       {
         path: "inventory",

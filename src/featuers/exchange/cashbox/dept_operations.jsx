@@ -1,0 +1,9 @@
+import { Box } from "@mui/material";
+
+export default function Dept() {
+    return(
+        <Box>
+            
+        </Box>
+    )
+}
