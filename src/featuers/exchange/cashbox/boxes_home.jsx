@@ -2,6 +2,7 @@ import { Grid, Card, Typography, Box, Divider } from "@mui/material";
 import { formatSyriaDateTime } from "../../../shared/utilsDate";
 import { MdAccessTime } from "react-icons/md";
 import { getSupportedCurrency } from "../../../shared/currencydata/currencies";
+import { formatNumber } from "../../../shared/utils";
 
 export default function Boxes({ cashboxes, loading, error }) {
   if (loading) return <h1>Loading...</h1>;
@@ -123,7 +124,7 @@ export default function Boxes({ cashboxes, loading, error }) {
                           color: "rgba(250, 229, 110, 0.992)",
                         }}
                       >
-                        {item.balance}
+                        {formatNumber(item.balance)}
                       </Typography>
                     </Box>
                   </Box>

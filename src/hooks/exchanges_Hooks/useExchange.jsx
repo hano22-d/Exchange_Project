@@ -7,8 +7,6 @@ import {
 import { getExchangeByIdService } from "../../services/exchangeService";
   
 
-  
-  
   export function useExchange(id) {
 
     //الخاص بالحركة id التحقق من
