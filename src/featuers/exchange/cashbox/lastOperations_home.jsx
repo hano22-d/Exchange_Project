@@ -6,7 +6,12 @@ import {
   FaScaleBalanced,
 } from "react-icons/fa6";
 import { MdFactCheck, MdHistory } from "react-icons/md";
-export default function LastOper() {
+export default function LastOper({cashboxes}) {
+
+  // الصناديق الموجبة & السالبة
+  const positiveBalance = cashboxes.filter(cashbox => cashbox.balance > 0).length;
+  const negativeBalance = cashboxes.length - positiveBalance
+
   const oper = [
     {
       operType: "تسجيل دين جديد",
@@ -361,7 +366,7 @@ export default function LastOper() {
                   mt: 1,
                 }}
               >
-                6
+                {positiveBalance}
               </Typography>
             </Card>
             <Card
@@ -388,7 +393,7 @@ export default function LastOper() {
                   mt: 1,
                 }}
               >
-                0
+                {negativeBalance}
               </Typography>
             </Card>
           </Box>

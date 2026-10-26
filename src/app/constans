@@ -11,7 +11,7 @@
 
 3- Transfer: 
  {
-  id,date,fullName,currency,amount,destination,direction,note
+  id,date,fullName,currency,amount,destination,direction,note,wages,wagesIncluded
  }  
 
 4- Parties: 

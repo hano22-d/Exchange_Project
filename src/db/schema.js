@@ -2,8 +2,8 @@ export const indexesName = {
   fromCurrency: "fromCurrencyIndex",
   toCurrency: "toCurrencyIndex",
   date: "dateIndex",
-  currencyPair: "currencyPairIndex"
-}
+  currencyPair: "currencyPairIndex",
+};
 
 export function createCashboxStore(db) {
   return db.createObjectStore("cashboxes", { keyPath: "currency" });
@@ -20,5 +20,15 @@ export function createExchangeStore(db) {
   store.createIndex(indexesName.date, "date");
   store.createIndex(indexesName.currencyPair, ["fromCurrency", "toCurrency"]);
 
-  return store
+  return store;
+}
+
+export function createTransferStore(db) {
+  const store = db.createObjectStore("transfers", {
+    keyPath: "id",
+    autoIncrement: true,
+  });
+
+  store.createIndex("dateIndex", "date");
+  store.createIndex("directionIndex", "direction");
 }

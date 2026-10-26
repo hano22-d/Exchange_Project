@@ -1,6 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import "../styles/navbar.css";
+import websiteLogo from "../assets/website-Logo.png";
 
 function Navbar() {
   return (
@@ -44,7 +45,7 @@ function Navbar() {
           علي كرازة للصرافة
         </Typography>
 
-        <img src="src/assets/website-Logo.png" style={{ width: "100px" }} />
+        <img src={websiteLogo} style={{ width: "100px" }} />
       </Box>
     </Box>
   );

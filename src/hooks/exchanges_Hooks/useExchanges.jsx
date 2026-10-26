@@ -4,13 +4,11 @@ import {
     useCallback,
     useRef,
   } from "react";
+import { queryExchangesService } from "../../services/exchangeService";
   
-  import {
-    queryExchangesService,
-  } from "../../../services/exchangeService.js";
+
   
-  
-  export function useExchanges(filters = {}) {
+   function useExchanges(filters = {}) {
 
     // استخراج قيم الفلاتر
     const dateFrom = filters?.dateFrom ?? "";
@@ -60,12 +58,9 @@ import {
           note,
         });
   
-        // إذا بدأ طلب أحدث، نتجاهل نتيجة الطلب الأقدم
-        if (requestId !== requestIdRef.current) {
-          return result;
+        if (requestId === requestIdRef.current) {
+          setExchanges(result);
         }
-  
-        setExchanges(result);
   
         return result;
       } catch (error) {
@@ -111,3 +106,4 @@ import {
       refetch
     };
   }
+  export default useExchanges

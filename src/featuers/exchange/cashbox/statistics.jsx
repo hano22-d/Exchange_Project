@@ -4,7 +4,7 @@ import { FaHandHoldingDollar, FaMoneyBillTransfer } from "react-icons/fa6";
 import { MdSwapHoriz } from "react-icons/md";
 
 
-export default function Statistics() {
+export default function Statistics({exchanges}) {
     return(
         <>
                 <Box
@@ -65,7 +65,7 @@ export default function Statistics() {
                 sx={{ color: "#29b6f6", fontSize: 25, fontWeight: "bold" }}
               >
                 {" "}
-                28
+                {exchanges.length}
               </Typography>
               <Typography sx={{ color: "#c5c2c2" }}>عملية بيع وشراء</Typography>
             </Box>
