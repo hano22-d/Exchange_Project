@@ -105,6 +105,7 @@ const currencyMenuProps = {
 export default function Exchange() {
   return (
     <Box
+      component="form"
       dir="rtl"
       sx={{
         width: "100%",
@@ -114,11 +115,14 @@ export default function Exchange() {
         display: "flex",
         justifyContent: "center",
         fontFamily,
+        
       }}
     >
       <Paper
         elevation={8}
         sx={{
+          display: "flex",
+          flexDirection: "column",
           width: "100%",
           maxWidth: `${FORM_WIDTH}px`,
           minWidth: "950px",
@@ -139,6 +143,7 @@ export default function Exchange() {
             justifyContent: "center",
             gap: "12px",
             marginBottom: "28px",
+            
           }}
         >
           <CurrencyExchangeIcon sx={{ color: primary, fontSize: "32px" }} />
@@ -196,6 +201,8 @@ export default function Exchange() {
             gap: "24px",
             alignItems: "start",
             marginBottom: "28px",
+
+
           }}
         >
           {/* العملة والمبلغ المستلم */}
@@ -285,85 +292,19 @@ export default function Exchange() {
           </Box>
 
           {/* سعر الصرف */}
-          <Box
-            sx={{
-              minWidth: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "stretch",
-            }}
-          >
-            <Box
+            <CompareArrowsIcon
               sx={{
-                height: "24px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: "30px",
-              }}
-            >
-              <CompareArrowsIcon
-                sx={{
-                  color: primary,
-                  fontSize: "50px",
-                  backgroundColor: "#232323",
-                  border: `1.5px solid ${primary}`,
-                  borderRadius: "50%",
-                  p: 0.7,
-                  mt: 10,
-                }}
-              />
-            </Box>
-
-            <Typography sx={{ ...labelStyles, mt: 5 }}>سعر الصرف</Typography>
-
-            <TextField
-              type="number"
-              placeholder="أدخل سعر الصرف"
-              fullWidth
-              sx={{
-                ...commonInputStyles,
-                marginBottom: "20px",
-
-                "& input": {
-                  color: secondary,
-                },
-
-                "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button":
-                  {
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-
-                "& input[type=number]": {
-                  MozAppearance: "textfield",
-                },
+                color: primary,
+                fontSize: "50px",
+                backgroundColor: "#232323",
+                border: `1.5px solid ${primary}`,
+                borderRadius: "50%",
+                p: 0.7,
+                alignSelf: "center",
+                justifySelf: "center"
               }}
             />
 
-            <Button
-              variant="outlined"
-              sx={{
-                width: "100%",
-                height: `${FIELD_HEIGHT}px`,
-                boxSizing: "border-box",
-                borderRadius: "8px",
-                borderColor: primary,
-                color: primary,
-                fontFamily,
-                fontSize: "15px",
-                fontWeight: "bold",
-                whiteSpace: "nowrap",
-                mt: 2,
-                "&:hover": {
-                  borderColor: primary,
-                  backgroundColor: "rgba(250,229,110,0.10)",
-                },
-              }}
-            >
-              احسب المبلغ
-            </Button>
-          </Box>
 
           {/* العملة والمبلغ المدفوع */}
           <Box sx={{ minWidth: 0 }}>
@@ -467,6 +408,35 @@ export default function Exchange() {
           </Box>
         </Box>
 
+        <Box sx={{ alignSelf: "center", justifySelf: "center" }}>
+          <Typography sx={{ ...labelStyles }}>سعر الصرف</Typography>
+
+          <TextField
+            type="number"
+            placeholder="أدخل سعر الصرف"
+            fullWidth
+            sx={{
+              ...commonInputStyles,
+              width: "300px",
+              marginBottom: "20px",
+
+              "& input": {
+                color: secondary,
+              },
+
+              "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button":
+                {
+                  WebkitAppearance: "none",
+                  margin: 0,
+                },
+
+              "& input[type=number]": {
+                MozAppearance: "textfield",
+              },
+            }}
+          />
+        </Box>
+
         {/* الملاحظات */}
         <Box sx={{ marginBottom: "28px" }}>
           <Typography sx={labelStyles}>الملاحظات</Typography>
@@ -525,7 +495,7 @@ export default function Exchange() {
           <Button
             variant="contained"
             sx={{
-              width: "180px",
+              width: "250px",
               height: "48px",
               borderRadius: "8px",
               backgroundColor: primary,
@@ -542,25 +512,6 @@ export default function Exchange() {
             تنفيذ العملية
           </Button>
 
-          <Button
-            variant="outlined"
-            sx={{
-              width: "180px",
-              height: "48px",
-              borderRadius: "8px",
-              borderColor: "#888888",
-              color: secondary,
-              fontFamily,
-              fontSize: "15px",
-
-              "&:hover": {
-                borderColor: primary,
-                backgroundColor: "rgba(250,229,110,0.06)",
-              },
-            }}
-          >
-            إلغاء
-          </Button>
         </Box>
       </Paper>
     </Box>
