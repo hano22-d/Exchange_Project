@@ -249,7 +249,7 @@ export default function Transfer() {
             <TextField
               multiline
               rows={2}
-              placeholder="أضف ملاحظات حول عملية الصرف..."
+              placeholder="أضف ملاحظات حول الدين ..."
               fullWidth
               sx={{
                 "& .MuiOutlinedInput-root": {
