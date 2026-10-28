@@ -117,7 +117,6 @@ export function applyRemainingTransferFilters(
     fullname = "",
     note = "",
     destination = "",
-    currency = "",
   } = filters;
 
   return transfers.filter((transfer) => {
@@ -157,10 +156,6 @@ export function applyRemainingTransferFilters(
       destination &&
       !(transfer.destination ?? "").toLocaleLowerCase().includes(destination)
     ) {
-      return false;
-    }
-
-    if (currency && transfer.currency !== currency) {
       return false;
     }
 

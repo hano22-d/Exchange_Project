@@ -48,7 +48,7 @@ function normalizeTransfer(data) {
   const isOutgoing = direction === TRANSFER_DIRECTIONS.OUTGOING;
 
   return {
-    fullname: typeof data.fullname === "string" ? data.fullname.trim() : "",
+    fullName: typeof data.fullname === "string" ? data.fullname.trim() : "",
 
     destination:
       typeof data.destination === "string" ? data.destination.trim() : "",
@@ -77,7 +77,7 @@ function normalizeTransfer(data) {
 //    Validate
 // ==================================
 function validateTransfer(transfer) {
-  if (!transfer.fullname) {
+  if (!transfer.fullName) {
     throw new Error("يرجى إدخال الاسم الثلاثي");
   }
 
@@ -204,9 +204,6 @@ export async function queryTransferService(filters = {}) {
   const rawDirection =
     typeof filters.direction === "string" ? filters.direction.trim() : "";
 
-  const rawCurrency =
-    typeof filters.currency === "string" ? filters.currency.trim() : "";
-
   // نجهز حدود التاريخ من مدخلات الواجهة، إن وجدت
   const hasDateInputs =
     (typeof filters.dateFrom === "string" && filters.dateFrom.trim() !== "") ||
@@ -230,7 +227,7 @@ export async function queryTransferService(filters = {}) {
 
     direction: rawDirection,
 
-    fullname: filters.fullname.toString().trim().toLocaleLowerCase(),
+    fullName: filters.fullName.toString().trim().toLocaleLowerCase(),
 
     note:
       typeof filters.note === "string"
@@ -241,8 +238,6 @@ export async function queryTransferService(filters = {}) {
       typeof filters.destination === "string"
         ? filters.destination.trim().toLocaleLowerCase()
         : "",
-
-    currency: rawCurrency,
   };
 
   //خطوات التحقق من الفلاتر
@@ -252,13 +247,6 @@ export async function queryTransferService(filters = {}) {
     normalizedFilters.direction !== TRANSFER_DIRECTIONS.INCOMING
   ) {
     throw new Error("فلتر اتجاه الحوالة غير صالح");
-  }
-
-  if (
-    normalizedFilters.currency &&
-    !isSupportedCurrency(normalizedFilters.currency)
-  ) {
-    throw new Error("عملة الفلترة غير مدعومة");
   }
 
   if (dateFromTimestamp != null && !Number.isFinite(dateFromTimestamp)) {
@@ -294,26 +282,18 @@ export async function queryTransferService(filters = {}) {
 //   دالة جلب حوالة واحدة
 // =================================
 export async function getTransferByIdService(id) {
-    const transferId =
-      typeof id === "string" ? Number(id) : id;
-  
-    if (!Number.isFinite(transferId)) {
-      throw new Error("معرّف الحوالة غير صالح.");
-    }
-  
-    return runInTransaction(
-      [TRANSFER_STORE_NAME],
-      "readonly",
-      async (tx) => {
-        const transfer = await transferRepository.getTransferById(
-          transferId,
-          tx
-        );
-  
-        return transfer;
-      }
-    );
+  const transferId = typeof id === "string" ? Number(id) : id;
+
+  if (!Number.isFinite(transferId)) {
+    throw new Error("معرّف الحوالة غير صالح.");
   }
+
+  return runInTransaction([TRANSFER_STORE_NAME], "readonly", async (tx) => {
+    const transfer = await transferRepository.getTransferById(transferId, tx);
+
+    return transfer;
+  });
+}
 
 // ==========================================
 //  دالة إضافة عملية تحويل جديدة
@@ -434,10 +414,10 @@ export async function deleteTransferService(id) {
 }
 
 const transferService = {
-    queryTransferService,
-    getTransferByIdService,
-    addTransferService,
-    updateTransferService,
-    deleteTransferService
-}
-export default transferService
+  queryTransferService,
+  getTransferByIdService,
+  addTransferService,
+  updateTransferService,
+  deleteTransferService,
+};
+export default transferService;

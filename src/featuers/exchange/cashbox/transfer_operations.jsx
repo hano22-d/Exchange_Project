@@ -109,7 +109,7 @@ export default function Transfer() {
               fontWeight: "bold",
             }}
           >
-            تفاصيل الحوالة
+            حوالات مالية
           </Typography>
         </Box>
         <Divider

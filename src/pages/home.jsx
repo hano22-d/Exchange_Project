@@ -12,6 +12,8 @@ import { getSupportedCurrency } from "../shared/currencydata/currencies";
 import LastOper from "../featuers/exchange/cashbox/lastOperations_home";
 import useExchanges from "../hooks/exchanges_Hooks/useexchanges";
 
+
+
 export default function Home() {
   //حالة فتح وإقلاق dialog
   const [open, setOpen] = useState(false);

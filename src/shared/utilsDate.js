@@ -248,8 +248,8 @@ export function getTimestampFromDateTimeLocal(
   );
 
   if (!match) {
-    throw new RangeError(
-      "Date-time must use YYYY-MM-DDTHH:mm or YYYY-MM-DDTHH:mm:ss."
+    throw new Error(
+      "تاريخ الحركة غير صالح، يرجى إدخال التاريخ والوقت بالشكل الصحيح."
     );
   }
 

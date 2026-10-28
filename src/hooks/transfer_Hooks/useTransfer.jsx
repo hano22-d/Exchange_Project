@@ -57,8 +57,11 @@ export default function useTransfer(id) {
 
   //  لتحديث تفاصيل الصفحة بعد نجاح التعديل
   const setTransferData = useCallback((updatedTransfer) => {
-    if (updatedTransfer !== null && updatedTransfer.id !== transferId)
-      setTransfer(updatedTransfer);
+    if (updatedTransfer !== null && updatedTransfer.id !== transferId) {
+      throw new Error("The exchange ID does not match the current record")
+    }
+    setTransfer(updatedTransfer)
+    
   }, [updatedTransfer]);
 
   return {

@@ -109,7 +109,7 @@ export default function Transfer() {
               fontWeight: "bold",
             }}
           >
-            تفاصيل الدين
+           تسجيل دين
           </Typography>
         </Box>
         <Divider

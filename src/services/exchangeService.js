@@ -10,6 +10,7 @@ import {
 import exchangeRpository from "../repositories/exchangeRepository.js";
 import cashboxRepository from "../repositories/cashboxrepository.js";
 import { getExchangeCalculationType } from "../shared/currencydata/exchange-pairs.js";
+import { calculateTargetAmount } from "../shared/utils.js";
 
 // =========== إعدادات الخدمة ============= //
 const EXCHANGES_STORE = "exchanges";
@@ -88,33 +89,35 @@ function normalizeExchangeInput(input) {
     fromAmount,
     rate,
     note: note.trim(),
+    updatedAt: Date.now(),
   };
 }
+
 
 // ============= التحقق من بيانات حركة الصرف ============== //
 function validateExchangeInput(exchange) {
   if (!Number.isSafeInteger(exchange.date)) {
-    throw new RangeError("Exchange date is invalid.");
+    throw new RangeError("تاريخ الصرافة غير صالح.");
   }
 
   if (!exchange.fromCurrency || !exchange.toCurrency) {
-    throw new Error("Both currencies are required.");
+    throw new Error("كلتا العملتين مطلوبتان");
   }
 
   if (exchange.fromCurrency === exchange.toCurrency) {
-    throw new Error("Source and target currencies must be different.");
+    throw new Error("يجب أن تكون عملة المصدر وعملة الهدف مختلفتين");
   }
 
   if (!Number.isFinite(exchange.fromAmount) || exchange.fromAmount <= 0) {
-    throw new RangeError("Source amount must be a valid positive number.");
+    throw new RangeError("يرجى إدخال المبلغ المستلم من الزبون");
   }
 
   if (!Number.isFinite(exchange.rate) || exchange.rate <= 0) {
-    throw new RangeError("Exchange rate must be a valid positive number.");
+    throw new RangeError("يرجى إدخال سعر الصرف");
   }
 
   if (typeof exchange.note !== "string") {
-    throw new TypeError("Exchange note must be a string.");
+    throw new TypeError("يجب أن تكون ملاحظة الصرافة نصاً.");
   }
 
   const pairKey = `${exchange.fromCurrency}-${exchange.toCurrency}`;
@@ -125,47 +128,10 @@ function validateExchangeInput(exchange) {
   );
 
   if (!calculationType) {
-    throw new Error(`Unsupported currency pair: ${pairKey}`);
+    throw new Error(`زوج العملات غير مدعوم: ${pairKey}`);
   }
 
   return calculationType;
-}
-
-// ============ حساب المبلغ الناتج ============ //
-export function calculateTargetAmount(fromAmount, rate, calculationType) {
-  const amount = Number(fromAmount);
-  const exchangeRate = Number(rate);
-
-  if (
-    !Number.isFinite(amount) ||
-    !Number.isFinite(exchangeRate) ||
-    amount <= 0 ||
-    exchangeRate <= 0
-  ) {
-    throw new RangeError("Amount and rate must be valid positive numbers.");
-  }
-
-  let result;
-
-  if (calculationType === "multiply") {
-    result = amount * exchangeRate;
-  } else if (calculationType === "divide") {
-    result = amount / exchangeRate;
-  } else {
-    throw new Error(`Invalid calculation type: ${calculationType}`);
-  }
-
-  if (!Number.isFinite(result) || result <= 0) {
-    throw new RangeError("Calculated target amount is invalid.");
-  }
-
-  const roundedResult = Number(result.toFixed(4));
-
-  if (!Number.isFinite(roundedResult) || roundedResult <= 0) {
-    throw new RangeError("Calculated target amount is too small or invalid.");
-  }
-
-  return roundedResult;
 }
 
 // ============= تجهيز الحركة بعد التطبيع والتحقق ============= //
