@@ -14,11 +14,12 @@ import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 
 const primary = "rgba(250,229,110,0.992)";
 const secondary = "#ffffff";
+const text = "black"
 const darkBackground = "#232323";
 const fontFamily = "'Alyamama', sans-serif";
+const borderColor = "rgba(250,229,110,0.45)";
 
 const FIELD_HEIGHT = 56;
-const FORM_WIDTH = 1200;
 
 const currencyOptions = [
   { value: "SYP", label: "ليرة سورية (SYP)" },
@@ -30,14 +31,12 @@ const currencyOptions = [
 const commonInputStyles = {
   "& .MuiOutlinedInput-root": {
     height: `${FIELD_HEIGHT}px`,
-    boxSizing: "border-box",
     color: secondary,
     backgroundColor: darkBackground,
-    fontFamily,
-    borderRadius: "8px",
+    borderRadius: 2,
 
     "& fieldset": {
-      borderColor: "rgba(250,229,110,0.45)",
+      borderColor: borderColor,
     },
 
     "&:hover fieldset": {
@@ -45,23 +44,12 @@ const commonInputStyles = {
     },
 
     "&.Mui-focused fieldset": {
-      borderColor: primary,
-      borderWidth: "2px",
+      borderColor: secondary,
     },
   },
 
   "& .MuiInputBase-input": {
     fontFamily,
-    boxSizing: "border-box",
-  },
-
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    height: `${FIELD_HEIGHT}px`,
-    boxSizing: "border-box",
-    paddingTop: 0,
-    paddingBottom: 0,
   },
 
   "& .MuiSvgIcon-root": {
@@ -70,89 +58,49 @@ const commonInputStyles = {
 };
 
 const labelStyles = {
-  display: "block",
   color: primary,
   fontFamily,
-  fontSize: "14px",
-  marginBottom: "10px",
-  textAlign: "right",
-};
-
-const currencyMenuProps = {
-  PaperProps: {
-    sx: {
-      backgroundColor: darkBackground,
-      color: secondary,
-      fontFamily,
-
-      "& .MuiMenuItem-root": {
-        fontFamily,
-        minHeight: "44px",
-        justifyContent: "flex-end",
-
-        "&:hover": {
-          backgroundColor: "rgba(250,229,110,0.12)",
-        },
-
-        "&.Mui-selected": {
-          backgroundColor: "rgba(250,229,110,0.18)",
-        },
-      },
-    },
-  },
+  fontSize: 14,
+  marginBottom: 1,
 };
 
 export default function Exchange() {
   return (
     <Box
       component="form"
-      dir="rtl"
       sx={{
         width: "100%",
-        minWidth: "1000px",
-        boxSizing: "border-box",
-        padding: "24px",
         display: "flex",
-        justifyContent: "center",
-        fontFamily,
-        
+        boxSizing: "border-box",
+        p: 4,
       }}
     >
       <Paper
         elevation={8}
         sx={{
-          display: "flex",
-          flexDirection: "column",
           width: "100%",
-          maxWidth: `${FORM_WIDTH}px`,
-          minWidth: "950px",
-          boxSizing: "border-box",
-          padding: "32px",
           backgroundColor: "#111111",
-          color: secondary,
-          border: "1px solid rgba(250,229,110,0.25)",
-          borderRadius: "14px",
-          fontFamily,
+          border: `2px solid ${borderColor}`,
+          borderRadius: 3,
+          p: 6,
         }}
       >
         {/* عنوان النموذج */}
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            gap: "12px",
-            marginBottom: "28px",
-            
+            gap: 1,
+            mb: 4,
           }}
         >
-          <CurrencyExchangeIcon sx={{ color: primary, fontSize: "32px" }} />
+          <CurrencyExchangeIcon sx={{ color: primary, fontSize: 30 }} />
 
           <Typography
             sx={{
               color: primary,
               fontFamily,
-              fontSize: "24px",
+              fontSize: 25,
               fontWeight: "bold",
             }}
           >
@@ -162,8 +110,8 @@ export default function Exchange() {
 
         <Divider
           sx={{
-            borderColor: "rgba(250,229,110,0.25)",
-            marginBottom: "28px",
+            borderColor: borderColor,
+            mb: 4,
           }}
         />
 
@@ -173,14 +121,13 @@ export default function Exchange() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginBottom: "28px",
+            mb: 1,
           }}
         >
           <Typography sx={labelStyles}>التاريخ والوقت</Typography>
 
           <TextField
             type="datetime-local"
-            lang="en-US"
             sx={{
               ...commonInputStyles,
               width: "300px",
@@ -196,64 +143,34 @@ export default function Exchange() {
         {/* الأعمدة الثلاثة */}
         <Box
           sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: "24px",
-            alignItems: "start",
-            marginBottom: "28px",
-
-
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          {/* العملة والمبلغ المستلم */}
-          <Box sx={{ minWidth: 0 }}>
+          {/* المبلغ والعملة المستلمة */}
+          <Box sx={{ minWidth: 380 }}>
             <Typography sx={labelStyles}>العملة المستلمة</Typography>
 
             <Select
-              defaultValue="USD"
               fullWidth
-              MenuProps={currencyMenuProps}
               sx={{
                 ...commonInputStyles,
                 height: `${FIELD_HEIGHT}px`,
-                marginBottom: "20px",
-                borderRadius: "8px",
+                marginBottom: 2.5,
+                borderRadius: 2,
 
-                // الحالة العادية
                 "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "rgba(250,229,110,0.45)",
-                  borderWidth: "1px",
+                  borderColor: borderColor,
                 },
 
-                // عند مرور المؤشر
                 "&:hover .MuiOutlinedInput-notchedOutline": {
                   borderColor: primary,
                 },
-
-                // عند الضغط أو التركيز
                 "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: primary,
-                  borderWidth: "2px",
+                  borderColor: secondary,
                 },
 
-                // النص الظاهر داخل الحقل
-                "& .MuiSelect-select": {
-                  display: "flex",
-                  alignItems: "center",
-                  height: `${FIELD_HEIGHT}px`,
-                  boxSizing: "border-box",
-                  padding: "0 14px",
-                  color: secondary,
-                  fontFamily,
-                  textAlign: "right",
-                },
-
-                // السهم
-                "& .MuiSelect-icon": {
-                  color: primary,
-                },
-
-                // الخلفية في جميع الحالات
                 backgroundColor: darkBackground,
                 color: secondary,
               }}
@@ -287,74 +204,46 @@ export default function Exchange() {
                 "& input[type=number]": {
                   MozAppearance: "textfield",
                 },
+
               }}
             />
           </Box>
 
-          {/* سعر الصرف */}
-            <CompareArrowsIcon
-              sx={{
-                color: primary,
-                fontSize: "50px",
-                backgroundColor: "#232323",
-                border: `1.5px solid ${primary}`,
-                borderRadius: "50%",
-                p: 0.7,
-                alignSelf: "center",
-                justifySelf: "center"
-              }}
-            />
-
+          {/*  الايقونة */}
+          <CompareArrowsIcon
+            sx={{
+              color: primary,
+              fontSize: 50,
+              backgroundColor: darkBackground,
+              border: `1.5px solid ${primary}`,
+              borderRadius: "50%",
+              p: 0.7,
+            }}
+          />
 
           {/* العملة والمبلغ المدفوع */}
-          <Box sx={{ minWidth: 0 }}>
+          <Box sx={{ minWidth: 380 }}>
             <Typography sx={labelStyles}>العملة المدفوعة</Typography>
 
             <Select
-              defaultValue="SYP"
               fullWidth
-              MenuProps={currencyMenuProps}
               sx={{
                 ...commonInputStyles,
                 height: `${FIELD_HEIGHT}px`,
-                marginBottom: "20px",
-                borderRadius: "8px",
+                marginBottom: 2.5,
+                borderRadius: 2,
 
-                // الحالة العادية
                 "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "rgba(250,229,110,0.45)",
-                  borderWidth: "1px",
+                  borderColor: borderColor,
                 },
 
-                // عند مرور المؤشر
                 "&:hover .MuiOutlinedInput-notchedOutline": {
                   borderColor: primary,
                 },
-
-                // عند الضغط أو التركيز
                 "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: primary,
-                  borderWidth: "2px",
+                  borderColor: secondary,
                 },
 
-                // النص الظاهر داخل الحقل
-                "& .MuiSelect-select": {
-                  display: "flex",
-                  alignItems: "center",
-                  height: `${FIELD_HEIGHT}px`,
-                  boxSizing: "border-box",
-                  padding: "0 14px",
-                  color: secondary,
-                  fontFamily,
-                  textAlign: "right",
-                },
-
-                // السهم
-                "& .MuiSelect-icon": {
-                  color: primary,
-                },
-
-                // الخلفية في جميع الحالات
                 backgroundColor: darkBackground,
                 color: secondary,
               }}
@@ -373,36 +262,34 @@ export default function Exchange() {
                 width: "100%",
                 height: `${FIELD_HEIGHT}px`,
                 boxSizing: "border-box",
-                padding: "0 14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "8px",
-                overflow: "hidden",
-                border: "1px solid rgba(250,229,110,0.45)",
-                borderRadius: "8px",
+                gap: 0.5,
+                border: `1px solid ${borderColor}`,
+                borderRadius: 2,
                 backgroundColor: "rgba(250,229,110,0.08)",
               }}
             >
               <Typography
                 sx={{
-                  color: "#999999",
+                  color: secondary,
                   fontFamily,
-                  fontSize: "18px",
+                  fontSize: 18,
                   fontWeight: "bold",
                 }}
               >
-                —
+                --
               </Typography>
 
               <Typography
                 sx={{
                   color: primary,
                   fontFamily,
-                  fontSize: "13px",
+                  fontSize: 18,
                 }}
               >
-                SYP
+                (SYP)
               </Typography>
             </Box>
           </Box>
@@ -414,50 +301,38 @@ export default function Exchange() {
           <TextField
             type="number"
             placeholder="أدخل سعر الصرف"
-            fullWidth
             sx={{
               ...commonInputStyles,
               width: "300px",
-              marginBottom: "20px",
+              mb: 2,
 
-              "& input": {
-                color: secondary,
-              },
-
+              // ازالة الشريط الجانبي للحقل
               "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button":
                 {
                   WebkitAppearance: "none",
-                  margin: 0,
                 },
-
-              "& input[type=number]": {
-                MozAppearance: "textfield",
-              },
             }}
           />
         </Box>
 
         {/* الملاحظات */}
-        <Box sx={{ marginBottom: "28px" }}>
+        <Box sx={{ mb: 3 }}>
           <Typography sx={labelStyles}>الملاحظات</Typography>
 
           <TextField
             multiline
-            rows={3}
+            rows={2}
             placeholder="أضف ملاحظات حول عملية الصرف..."
             fullWidth
             sx={{
-              width: "100%",
-
+              
               "& .MuiOutlinedInput-root": {
                 color: secondary,
                 backgroundColor: darkBackground,
-                fontFamily,
-                borderRadius: "8px",
-                alignItems: "flex-start",
+                borderRadius: 2,
 
                 "& fieldset": {
-                  borderColor: "rgba(250,229,110,0.45)",
+                  borderColor: borderColor,
                 },
 
                 "&:hover fieldset": {
@@ -465,7 +340,7 @@ export default function Exchange() {
                 },
 
                 "&.Mui-focused fieldset": {
-                  borderColor: primary,
+                  borderColor: secondary,
                 },
               },
 
@@ -479,8 +354,8 @@ export default function Exchange() {
 
         <Divider
           sx={{
-            borderColor: "rgba(250,229,110,0.25)",
-            marginBottom: "24px",
+            borderColor: borderColor,
+            mb: 3,
           }}
         />
 
@@ -497,21 +372,20 @@ export default function Exchange() {
             sx={{
               width: "250px",
               height: "48px",
-              borderRadius: "8px",
+              borderRadius: 2,
               backgroundColor: primary,
-              color: "#111111",
+              color: text,
               fontFamily,
-              fontSize: "15px",
+              fontSize: 15,
               fontWeight: "bold",
 
               "&:hover": {
-                backgroundColor: "#e6cf55",
+                backgroundColor: primary,
               },
             }}
           >
             تنفيذ العملية
           </Button>
-
         </Box>
       </Paper>
     </Box>
