@@ -10,7 +10,7 @@ import Statistics from "../featuers/exchange/cashbox/statistics";
 import useCashboxces from "../hooks/cashbox_Hooks/usecashboxes";
 import { getSupportedCurrency } from "../shared/currencydata/currencies";
 import LastOper from "../featuers/exchange/cashbox/lastOperations_home";
-import useExchanges from "../hooks/exchanges_hooks/useExchanges";
+import useExchanges from "../hooks/exchanges_hooks/useExchanges.jsx";
 
 
 
