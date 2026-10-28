@@ -6,7 +6,7 @@ import {
   deleteExchangeService,
 } from "../../services/exchangeService.js";
 
-import  useCashboxContext  from "../../hooks//cashbox_Hooks/useCashboxContext.jsx";
+import  useCashboxContext  from "../cashbox_Hooks/useCashboxContext.jsx";
 import cashboxService from "../../services/cashboxService.js";
 
 export function useExchangeActions() {
