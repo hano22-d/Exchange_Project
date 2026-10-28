@@ -12,8 +12,6 @@ import { getSupportedCurrency } from "../shared/currencydata/currencies";
 import LastOper from "../featuers/exchange/cashbox/lastOperations_home";
 import useExchanges from "../hooks/exchanges_hooks/useExchanges.jsx";
 
-
-
 export default function Home() {
   //حالة فتح وإقلاق dialog
   const [open, setOpen] = useState(false);
@@ -30,9 +28,8 @@ export default function Home() {
   //hook جلب الصناديق
   const { cashboxes, loading, error } = useCashboxces();
   //hook جلب الحركات
-  const {exchanges} = useExchanges()
+  const { exchanges } = useExchanges();
 
-  
   // دالة إضافة صندوق
   async function createCashbox(currency, balance) {
     const newCshbox = {
@@ -137,7 +134,7 @@ export default function Home() {
         </Box>
 
         <Statistics exchanges={exchanges} />
-        <LastOper cashboxes={cashboxes}/>
+        <LastOper cashboxes={cashboxes} />
       </Box>
     </Box>
   );
