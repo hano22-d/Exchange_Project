@@ -77,7 +77,6 @@ export default function Archive() {
     },
   ];
 
-  // فلترة البيانات بناءً على الفلتر المحدد
   const filteredData = operationsData.filter((item) => {
     if (activeFilter === "all") return true;
     return item.typeKey === activeFilter;
