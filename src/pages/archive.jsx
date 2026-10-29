@@ -303,8 +303,8 @@ export default function Archive() {
 
         <Divider sx={{ backgroundColor: primary, my: 1 }} />
 
-        {filteredData.map((row, index) => (
-          <Box key={row.id}>
+        {filteredData.map((item, index) => (
+          <Box key={item.id}>
             <Box
               sx={{
                 display: "grid",
@@ -327,14 +327,14 @@ export default function Archive() {
                     fontWeight: "bold",
                     textAlign: "center",
                     backgroundColor:
-                      row.typeKey === "exchange"
+                      item.typeKey === "exchange"
                         ? "rgba(0, 150, 136, 0.2)"
                         : "rgba(3, 169, 244, 0.2)",
-                    color: row.typeKey === "exchange" ? "#4db6ac" : "#4fc3f7",
-                    border: `1px solid ${row.typeKey === "exchange" ? "#00897b" : "#0288d1"}`,
+                    color: item.typeKey === "exchange" ? "#4db6ac" : "#4fc3f7",
+                    border: `1px solid ${item.typeKey === "exchange" ? "#00897b" : "#0288d1"}`,
                   }}
                 >
-                  {row.type}
+                  {item.type}
                 </Box>
               </Box>
 
@@ -343,7 +343,7 @@ export default function Archive() {
                 align="center"
                 sx={{ color: secondary, fontFamily, fontSize: 15 }}
               >
-                {row.date}
+                {item.date}
               </Typography>
 
               {/* التفاصيل المالية */}
@@ -355,7 +355,7 @@ export default function Archive() {
                   fontSize: 15,
                 }}
               >
-                {row.details}
+                {item.details}
               </Typography>
 
               {/* الطرف / الوجهة */}
@@ -363,7 +363,7 @@ export default function Archive() {
                 align="center"
                 sx={{ color: secondary, fontFamily, fontSize: 15 }}
               >
-                {row.party}
+                {item.party}
               </Typography>
 
               {/* الملاحظة */}
@@ -371,7 +371,7 @@ export default function Archive() {
                 align="center"
                 sx={{ color: secondary, fontFamily, fontSize: 15 }}
               >
-                {row.note}
+                {item.note}
               </Typography>
 
               {/* زر تفاصيل */}
