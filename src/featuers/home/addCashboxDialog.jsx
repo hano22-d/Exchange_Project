@@ -16,7 +16,7 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import CloseIcon from "@mui/icons-material/Close";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import { SUPPORTED_CURRENCIES } from "../../../shared/currencydata/currencies";
+import { SUPPORTED_CURRENCIES } from "../../shared/currencydata/currencies";
 
 const AddCashboxDialog = ({ open, onClose, onConfirm, loading }) => {
   const [cashboxForm, setCshboxForm] = useState({

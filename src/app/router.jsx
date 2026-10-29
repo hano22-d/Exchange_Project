@@ -5,9 +5,9 @@ import Inventory from "../pages/inventory";
 import Archive from "../pages/archive";
 import Depts from "../pages/depts";
 import MainLayout from "./mainLayout";
-import Exchange from "../featuers/exchange/cashbox/exchange_operations";
-import Transfer from "../featuers/exchange/cashbox/transfer_operations";
-import Dept from "../featuers/exchange/cashbox/dept_operations";
+import Exchange from "../featuers/operations/exchange_operations";
+import Transfer from "../featuers/operations/transfer_operations";
+import Dept from "../featuers/operations/dept_operations";
 
 export const router = createBrowserRouter([
   {

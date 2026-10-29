@@ -1,8 +1,8 @@
 import { Grid, Card, Typography, Box, Divider } from "@mui/material";
-import { formatSyriaDateTime } from "../../../shared/utilsDate";
 import { MdAccessTime } from "react-icons/md";
-import { getSupportedCurrency } from "../../../shared/currencydata/currencies";
-import { formatNumber } from "../../../shared/utils";
+import { formatSyriaDateTime } from "../../shared/utilsDate";
+import { formatNumber } from "../../shared/utils";
+import { getSupportedCurrency } from "../../shared/currencydata/currencies";
 
 export default function Boxes({ cashboxes, loading, error }) {
   if (loading) return <h1>Loading...</h1>;

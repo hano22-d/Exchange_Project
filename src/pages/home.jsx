@@ -2,14 +2,14 @@ import { Typography, Box, Button } from "@mui/material";
 import { FaChartLine, FaCoins } from "react-icons/fa";
 import { FaVault } from "react-icons/fa6";
 import { useState } from "react";
-import AddCashboxDialog from "../featuers/exchange/cashbox/addCashboxDialog";
+import AddCashboxDialog from "../featuers/home/addCashboxDialog";
 import useCashboxActions from "../hooks/cashbox_Hooks/useCashboxActions";
 import BasicToast from "../shared/ui/toast";
-import Boxes from "../featuers/exchange/cashbox/boxes_home";
-import Statistics from "../featuers/exchange/cashbox/statistics";
+import Boxes from "../featuers/home/boxes_home";
+import Statistics from "../featuers/home/statistics";
 import useCashboxces from "../hooks/cashbox_Hooks/usecashboxes";
 import { getSupportedCurrency } from "../shared/currencydata/currencies";
-import LastOper from "../featuers/exchange/cashbox/lastOperations_home";
+import LastOper from "../featuers/home/lastOperations_home";
 import useExchanges from "../hooks/exchanges_hooks/useExchanges.jsx";
 
 export default function Home() {
