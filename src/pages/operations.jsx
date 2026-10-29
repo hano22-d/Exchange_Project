@@ -11,7 +11,12 @@ export default function Operations() {
     <Box className="container">
       <Typography
         variant="h6"
-        sx={{ fontFamily: "'Alyamama', sans-serif", color: "white" }}
+        sx={{
+          fontFamily: "'Alyamama', sans-serif",
+          fontWeight: 800,
+          color: "white",
+          py: 1,
+        }}
       >
         اختر نوع العملية:
       </Typography>

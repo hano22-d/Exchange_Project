@@ -2,9 +2,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 25px;
 }
 
+.filterBox,
 .linksBox {
   display: flex;
   justify-content: center;
@@ -15,11 +15,14 @@
   padding: 4px;
 }
 
+.filter,
 .link {
   text-decoration: none;
   color: black;
+  cursor: pointer;
 }
 
+.filterAndIcon,
 .linkAndIcon {
   display: flex;
   align-items: center;
@@ -28,11 +31,14 @@
   gap: 5px;
 }
 
+.filterAndIcon:hover,
 .linkAndIcon:hover {
   background-color: #00000020;
   transition: 0.5s;
 }
 
+.filterAndIcon.active,
+.filterAndIcon.active *,
 .linkAndIcon.active,
 .linkAndIcon.active * {
   background-color: black;
