@@ -62,7 +62,7 @@ export default function useTransfer(id) {
     }
     setTransfer(updatedTransfer)
     
-  }, [updatedTransfer]);
+  }, [transferId]);
 
   return {
     transfer,

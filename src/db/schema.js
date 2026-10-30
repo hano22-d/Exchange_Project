@@ -32,3 +32,24 @@ export function createTransferStore(db) {
   store.createIndex("dateIndex", "date");
   store.createIndex("directionIndex", "direction");
 }
+
+export function createPartyStore(db) {
+  const store = db.createObjectStore("parties", {
+    keyPath: "id",
+    autoIncrement: true,
+  });
+
+  store.createIndex("fullNameIndex", "fullName");
+}
+
+export function createDebtStore(db) {
+  const store = db.createObjectStore("debts", {
+    keyPath: "id",
+    autoIncrement: true,
+  });
+
+  store.createIndex("partyIdIndex","partyId")
+  store.createIndex("dateIndex","date")
+  store.createIndex("directionIndex","direction")
+  store.createIndex("currencyIndex","currency")
+}
