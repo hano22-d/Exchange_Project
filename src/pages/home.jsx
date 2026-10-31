@@ -10,7 +10,7 @@ import Statistics from "../featuers/home/statistics";
 import useCashboxces from "../hooks/cashbox_Hooks/usecashboxes";
 import { getSupportedCurrency } from "../shared/currencydata/currencies";
 import LastOper from "../featuers/home/lastOperations_home";
-import useExchanges from "../hooks/exchanges_hooks/useExchanges.jsx";
+import useExchanges from "../hooks/exchanges-Hooks/useExchanges";
 
 export default function Home() {
   //حالة فتح وإقلاق dialog
