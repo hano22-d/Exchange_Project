@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Divider } from "@mui/material";
+import { Box, Typography, Button, Divider, Pagination } from "@mui/material";
 import "../styles/operations.css";
 import {
   MdCurrencyExchange,
@@ -210,6 +210,52 @@ export default function Archive() {
         )}
 
         {activeFilter === "transfers" && <TrFilter />}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            backgroundColor: darkBackground,
+            border: `1px solid ${primary}`,
+            borderRadius: 2,
+            p: 2,
+            mt: 3,
+          }}
+        >
+          <Pagination
+            count={1}
+            showFirstButton
+            showLastButton
+
+            sx={{
+              "& .MuiPaginationItem-root": {
+                color: secondary,
+                fontFamily,
+                borderColor: "rgba(250, 229, 110, 0.4)",
+                margin: "0 3px",
+              },
+              "& .MuiPaginationItem-root.Mui-selected": {
+                backgroundColor: primary,
+                color: text,
+                fontWeight: "bold",
+                borderColor: primary,
+                transform: "scale(1.08)",
+              },
+              "& .MuiPaginationItem-root.Mui-selected:hover": {
+                backgroundColor: primary,
+              },
+            }}
+          />
+          <Typography
+            sx={{
+              color: secondary,
+              fontFamily,
+              fontSize: 18,
+              fontWeight: `bold`,
+            }}
+          >
+            عرض النتائج:
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
