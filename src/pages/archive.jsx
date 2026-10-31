@@ -10,6 +10,8 @@ import {
 import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { FaLayerGroup } from "react-icons/fa";
 import { useState } from "react";
+import TrFilter from "../featuers/archive/transfers_filter_archives";
+import ExFilter from "../featuers/archive/exchange_filter_archive";
 
 export default function Archive() {
   const primary = "rgba(250,229,110,0.992)";
@@ -19,6 +21,25 @@ export default function Archive() {
   const fontFamily = "'Alyamama', sans-serif";
 
   const [activeFilter, setActiveFilter] = useState("all");
+  const [exchangeFilters, setExchangeFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    currencyFrom: "",
+    currencyTo: "",
+    note: "",
+  });
+
+  const [transferFilters, setTransferFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    fullName: "",
+    direction: "",
+    currency: "",
+    note: "",
+  });
+
+  const [exchangeResetKey, setExchangeResetKey] = useState(0);
+  const [transferResetKey, setTransferResetKey] = useState(0);
 
   const operationsData = [
     {
@@ -79,6 +100,107 @@ export default function Archive() {
 
   const filteredData = operationsData.filter((item) => {
     if (activeFilter === "all") return true;
+
+    if (activeFilter === "exchange") {
+      if (
+        exchangeFilters.currencyFrom &&
+        !item.details.includes(exchangeFilters.currencyFrom)
+      ) {
+        return false;
+      }
+
+      if (
+        exchangeFilters.currencyTo &&
+        !item.details.includes(exchangeFilters.currencyTo)
+      ) {
+        return false;
+      }
+
+      const [datePart, timePart] = item.date.split(" - ");
+
+      const [day, month, year] = datePart.split("/");
+      const [hours, minutes] = timePart.split(":");
+
+      const operationDate = new Date(year, month - 1, day, hours, minutes);
+
+      if (
+        exchangeFilters.dateFrom &&
+        operationDate < new Date(exchangeFilters.dateFrom)
+      ) {
+        return false;
+      }
+
+      if (
+        exchangeFilters.dateTo &&
+        operationDate > new Date(exchangeFilters.dateTo)
+      ) {
+        return false;
+      }
+      if (
+        exchangeFilters.note &&
+        !item.note.toLowerCase().includes(exchangeFilters.note.toLowerCase())
+      ) {
+        return false;
+      }
+    }
+    if (activeFilter === "transfers") {
+      if (
+        transferFilters.currency &&
+        !item.details.includes(transferFilters.currency)
+      ) {
+        return false;
+      }
+      if (
+        transferFilters.fullName &&
+        !item.party
+          .toLowerCase()
+          .includes(transferFilters.fullName.toLowerCase())
+      ) {
+        return false;
+      }
+      if (transferFilters.direction) {
+        if (
+          transferFilters.direction === "outgoing" &&
+          !item.type.includes("صادرة")
+        ) {
+          return false;
+        }
+
+        if (
+          transferFilters.direction === "incoming" &&
+          !item.type.includes("واردة")
+        ) {
+          return false;
+        }
+      }
+      const [datePart, timePart] = item.date.split(" - ");
+
+      const [day, month, year] = datePart.split("/");
+      const [hours, minutes] = timePart.split(":");
+
+      const operationDate = new Date(year, month - 1, day, hours, minutes);
+
+      if (
+        transferFilters.dateFrom &&
+        operationDate < new Date(transferFilters.dateFrom)
+      ) {
+        return false;
+      }
+
+      if (
+        transferFilters.dateTo &&
+        operationDate > new Date(transferFilters.dateTo)
+      ) {
+        return false;
+      }
+      if (
+        transferFilters.note &&
+        !item.note.toLowerCase().includes(transferFilters.note.toLowerCase())
+      ) {
+        return false;
+      }
+    }
+
     return item.typeKey === activeFilter;
   });
 
@@ -147,7 +269,28 @@ export default function Archive() {
           </Box>
           <Button
             variant="outlined"
-            onClick={() => setActiveFilter("all")}
+            onClick={() => {
+              if (activeFilter === "exchange") {
+                setExchangeFilters({
+                  dateFrom: "",
+                  dateTo: "",
+                  currencyFrom: "",
+                  currencyTo: "",
+                  note: "",
+                });
+                setExchangeResetKey((prev) => prev + 1);
+              } else if (activeFilter === "transfers") {
+                setTransferFilters({
+                  dateFrom: "",
+                  dateTo: "",
+                  fullName: "",
+                  direction: "",
+                  currency: "",
+                  note: "",
+                });
+                setTransferResetKey((prev) => prev + 1);
+              }
+            }}
             sx={{
               color: primary,
               fontFamily,
@@ -190,6 +333,38 @@ export default function Archive() {
             <Box className={`filter`}>الحوالات</Box>
           </Box>
         </Box>
+        {activeFilter === "exchange" && (
+          <ExFilter
+            key={exchangeResetKey} // <--- هذا سيجبر المكون على إعادة التعيين بصرياً
+            onSearch={(filters) => setExchangeFilters(filters)}
+            onReset={() =>
+              setExchangeFilters({
+                dateFrom: "",
+                dateTo: "",
+                currencyFrom: "",
+                currencyTo: "",
+                note: "",
+              })
+            }
+          />
+        )}
+
+        {activeFilter === "transfers" && (
+          <TrFilter
+            key={transferResetKey} // <--- هذا سيجبر المكون على إعادة التعيين بصرياً
+            onSearch={(filters) => setTransferFilters(filters)}
+            onReset={() =>
+              setTransferFilters({
+                dateFrom: "",
+                dateTo: "",
+                fullName: "",
+                direction: "",
+                currency: "",
+                note: "",
+              })
+            }
+          />
+        )}
       </Box>
 
       {/* احصاء النتائج */}
@@ -313,7 +488,6 @@ export default function Archive() {
                 px: 2,
                 py: 2,
                 alignItems: "center",
-
               }}
             >
               <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -375,7 +549,7 @@ export default function Archive() {
               </Typography>
 
               {/* زر تفاصيل */}
-              <Box sx={{ display: "flex", justifyContent: "center"}}>
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
                 <Button
                   variant="outlined"
                   size="small"
@@ -392,7 +566,7 @@ export default function Archive() {
                   }}
                 >
                   <MdVisibility />
-                  <Typography sx={{fontFamily, mr: 1}}>التفاصيل</Typography>
+                  <Typography sx={{ fontFamily, mr: 1 }}>التفاصيل</Typography>
                 </Button>
               </Box>
             </Box>
