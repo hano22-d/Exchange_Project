@@ -321,6 +321,9 @@ export async function queryExchangesService(filters = {}) {
     note: typeof filters.note === "string" ? filters.note.trim() : "",
   };
 
+  console.log("Date Range:", dateRange);
+console.log("Repository Filters:", repositoryFilters);
+
   return runInTransaction([EXCHANGES_STORE], "readonly", (tx) =>
     exchangeRpository.queryExchanges(tx, repositoryFilters)
   );

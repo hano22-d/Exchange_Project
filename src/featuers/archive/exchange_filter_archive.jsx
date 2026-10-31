@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Box,
   Divider,
@@ -10,8 +9,10 @@ import {
   Button,
 } from "@mui/material";
 import { FaSearch } from "react-icons/fa";
+import useCashboxces from "../../hooks/cashbox_Hooks/usecashboxes";
+import { getSupportedCurrency } from "../../shared/currencydata/currencies";
 
-export default function ExFilter({ onSearch }) {
+export default function ExFilter({ filters, onChange, onSearch }) {
   const primary = "rgba(250,229,110,0.992)";
   const secondary = "#ffffff";
   const text = "black";
@@ -20,12 +21,6 @@ export default function ExFilter({ onSearch }) {
   const borderColor = "rgba(250,229,110,0.45)";
 
   const FIELD_HEIGHT = 40;
-
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [currencyFrom, setCurrencyFrom] = useState("");
-  const [currencyTo, setCurrencyTo] = useState("");
-  const [note, setNote] = useState("");
 
   const commonInputStyles = {
     "& .MuiOutlinedInput-root": {
@@ -63,22 +58,31 @@ export default function ExFilter({ onSearch }) {
     marginBottom: 1,
   };
 
-  const currencyOptions = [
-    { value: "SYP", label: "ليرة سورية (SYP)" },
-    { value: "USD", label: "دولار أمريكي (USD)" },
-    { value: "EUR", label: "يورو (EUR)" },
-    { value: "TRY", label: "ليرة تركية (TRY)" },
-  ];
+  //services
+  const { cashboxes } = useCashboxces();
 
-  const handleSearch = () => {
-    onSearch({
-      dateFrom,
-      dateTo,
-      currencyFrom,
-      currencyTo,
-      note,
+  //functions
+  function handleInputOnchange(event) {
+    const { name, value } = event.target;
+
+    onChange((prevFilters) => {
+      return { ...prevFilters, [name]: value };
     });
-  };
+  }
+
+  // قائمة العملات حسب الصناديق المنشأة
+  const viewCreatedCashboxes = cashboxes.map((cashbox) => {
+    if (!cashbox) {
+      return null;
+    }
+    const getNameAr = getSupportedCurrency(cashbox.currency).nameAr;
+    const currencyLabel = `${cashbox.currency} - ${getNameAr}`;
+
+    return {
+      value: cashbox.currency,
+      currencyLabel,
+    };
+  });
 
   return (
     <Container
@@ -90,13 +94,14 @@ export default function ExFilter({ onSearch }) {
         my: 4,
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "center", gap: 6 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 6, ml: 6 }}>
         <Box>
           <Typography sx={labelStyles}>التاريخ من:</Typography>
           <TextField
-            type="datetime-local"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
+            name="dateFrom"
+            type="date"
+            value={filters.dateFrom}
+            onChange={handleInputOnchange}
             sx={{
               ...commonInputStyles,
               width: "300px",
@@ -112,9 +117,10 @@ export default function ExFilter({ onSearch }) {
         <Box>
           <Typography sx={labelStyles}>التاريخ إلى:</Typography>
           <TextField
-            type="datetime-local"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
+            name="dateTo"
+            type="date"
+            value={filters.dateTo}
+            onChange={handleInputOnchange}
             sx={{
               ...commonInputStyles,
               width: "300px",
@@ -131,9 +137,10 @@ export default function ExFilter({ onSearch }) {
         <Box>
           <Typography sx={labelStyles}>العملة من:</Typography>
           <Select
+            name="fromCurrency"
             fullWidth
-            value={currencyFrom}
-            onChange={(e) => setCurrencyFrom(e.target.value)}
+            value={filters.fromCurrency}
+            onChange={handleInputOnchange}
             sx={{
               width: 300,
               ...commonInputStyles,
@@ -156,9 +163,9 @@ export default function ExFilter({ onSearch }) {
               color: secondary,
             }}
           >
-            {currencyOptions.map((currency) => (
+            {viewCreatedCashboxes.map((currency) => (
               <MenuItem key={currency.value} value={currency.value}>
-                {currency.label}
+                {currency.currencyLabel}
               </MenuItem>
             ))}
           </Select>
@@ -166,9 +173,10 @@ export default function ExFilter({ onSearch }) {
         <Box>
           <Typography sx={labelStyles}>العملة إلى:</Typography>
           <Select
+            name="toCurrency"
             fullWidth
-            value={currencyTo}
-            onChange={(e) => setCurrencyTo(e.target.value)}
+            value={filters.toCurrency}
+            onChange={handleInputOnchange}
             sx={{
               width: 300,
               ...commonInputStyles,
@@ -191,9 +199,9 @@ export default function ExFilter({ onSearch }) {
               color: secondary,
             }}
           >
-            {currencyOptions.map((currency) => (
+            {viewCreatedCashboxes.map((currency) => (
               <MenuItem key={currency.value} value={currency.value}>
-                {currency.label}
+                {currency.currencyLabel}
               </MenuItem>
             ))}
           </Select>
@@ -201,13 +209,14 @@ export default function ExFilter({ onSearch }) {
       </Box>
       <Typography sx={labelStyles}>الملاحظات</Typography>
       <TextField
+        name="note"
         multiline
         rows={1}
         placeholder="ابحث في ملاحظات الصرف ..."
-        fullWidth
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
+        value={filters.note}
+        onChange={handleInputOnchange}
         sx={{
+          width: "93%",
           "& .MuiOutlinedInput-root": {
             color: secondary,
             backgroundColor: darkBackground,
@@ -237,7 +246,7 @@ export default function ExFilter({ onSearch }) {
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Button
           variant="contained"
-          onClick={handleSearch}
+          onClick={onSearch}
           sx={{
             width: 200,
             display: "flex",

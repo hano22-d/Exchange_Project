@@ -7,11 +7,7 @@ const EXCHANGE_OBJECT_STORE = "exchanges";
 export async function getAllExchanges(tx) {
   const store = tx.objectStore(EXCHANGE_OBJECT_STORE);
 
-  console.log("[Repository] store name:", store.name);
-
   const result = await requestToPromise(store.getAll());
-
-  console.log("[Repository] raw records:", result);
 
   return result;
 }
@@ -98,12 +94,18 @@ async function getExchangeByDateRange(transaction, fromTimeStamp, toTimeStamp) {
 
 // ========== دالة اختيار الفهرس الاساسي ========== //
 export function choosePrimaryQuery(filters) {
-  const { fromCurrency, toCurrency, fromTimeStamp, toTimeStamp } = filters;
+  const {
+    fromCurrency,
+    toCurrency,
+    dateFromTimestamp,
+    dateToExclusiveTimestamp,
+  } = filters;
 
   const hasFromCurrency = Boolean(fromCurrency);
   const hasToCurrency = Boolean(toCurrency);
-  const hasFromDate = Boolean(fromTimeStamp);
-  const hasToDate = Boolean(toTimeStamp);
+
+  const hasFromDate = dateFromTimestamp != null;
+  const hasToDate = dateToExclusiveTimestamp != null;
 
   if (hasFromCurrency && hasToCurrency) {
     return "currencyPair";
@@ -115,9 +117,9 @@ export function choosePrimaryQuery(filters) {
     return "toCurrency";
   } else if (hasFromDate || hasToDate) {
     return "dateRange";
-  } else {
-    return "all";
   }
+
+  return "all";
 }
 
 // ========== دالة تطبيق الفلاتر المتبقية =========== //
@@ -138,6 +140,7 @@ export function applyRamainingFilters(exchanges, primaryQuery, filters = {}) {
     ) {
       return false;
     }
+
     if (
       toCurrency &&
       primaryQuery !== "toCurrency" &&
@@ -145,20 +148,26 @@ export function applyRamainingFilters(exchanges, primaryQuery, filters = {}) {
     ) {
       return false;
     }
+
     if (primaryQuery !== "dateRange") {
-      if (dateFromTimestamp && exchange.date < dateFromTimestamp) {
+      if (dateFromTimestamp != null && exchange.date < dateFromTimestamp) {
         return false;
       }
+
       if (
-        dateToExclusiveTimestamp &&
+        dateToExclusiveTimestamp != null &&
         exchange.date >= dateToExclusiveTimestamp
       ) {
         return false;
       }
     }
 
+    // فلترة الملاحظات
     if (note) {
-      if (!exchange.note.includes(note)) {
+      const exchangeNote = String(exchange.note ?? "").toLowerCase();
+      const searchNote = note.trim().toLowerCase();
+
+      if (!exchangeNote.includes(searchNote)) {
         return false;
       }
     }
@@ -169,7 +178,13 @@ export function applyRamainingFilters(exchanges, primaryQuery, filters = {}) {
 
 // ======== دالة الاستعلام العامة ======== //
 export async function queryExchanges(transaction, filters = {}) {
-  const { fromCurrency, toCurrency, fromTimeStamp, toTimeStamp } = filters;
+  const {
+    fromCurrency,
+    toCurrency,
+    dateFromTimestamp,
+    dateToExclusiveTimestamp,
+  } = filters;
+
   const primaryQuery = choosePrimaryQuery(filters);
 
   let exchanges;
@@ -183,35 +198,32 @@ export async function queryExchanges(transaction, filters = {}) {
       );
       break;
     }
+
     case "dateRange": {
       exchanges = await getExchangeByDateRange(
         transaction,
-        fromTimeStamp,
-        toTimeStamp
+        dateFromTimestamp,
+        dateToExclusiveTimestamp
       );
       break;
     }
+
     case "fromCurrency": {
       exchanges = await getExchangesByFromCurrency(transaction, fromCurrency);
       break;
     }
+
     case "toCurrency": {
       exchanges = await getExchangesByToCurrency(transaction, toCurrency);
       break;
     }
-    case "all":
+
     default: {
       exchanges = await getAllExchanges(transaction);
     }
   }
 
-  const filteredExchanges = applyRamainingFilters(
-    exchanges,
-    filters,
-    primaryQuery
-  );
-
-  return filteredExchanges;
+  return applyRamainingFilters(exchanges, primaryQuery, filters);
 }
 
 const exchangeRpository = {

@@ -1,3 +1,6 @@
+import { getSupportedCurrency } from "./currencydata/currencies";
+
+
 /* ==================== 
    دالة تنسيق الارقام 
    ==================== */
