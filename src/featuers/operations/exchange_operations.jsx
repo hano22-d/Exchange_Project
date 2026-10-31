@@ -12,7 +12,7 @@ import {
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import { FaLeftLong } from "react-icons/fa6";
 import { useState } from "react";
-import { useExchangeActions } from "../../hooks/exchanges_Hooks/useExchangeActions";
+import { useExchangeActions } from "../../hooks/exchanges-Hooks/useExchangeActions";
 import { getExchangeCalculationType } from "../../shared/currencydata/exchange-pairs";
 import { calculateTargetAmount, formatNumber } from "../../shared/utils";
 import BasicToast from "../../shared/ui/toast";
