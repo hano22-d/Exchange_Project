@@ -148,7 +148,9 @@ export default function Exchange() {
 
   // قائمة العملات حسب الصناديق المنشأة
   const viewCreatedCashboxes = cashboxes.map((cashbox) => {
-    if (!cashbox) return null;
+    if (!cashbox) {
+      return null
+    };
     const getNameAr = getSupportedCurrency(cashbox.currency).nameAr;
     const currencyLabel = `${cashbox.currency} - ${getNameAr}`;
 
