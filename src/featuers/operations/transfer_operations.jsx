@@ -7,6 +7,7 @@ import {
   Button,
   Select,
   MenuItem,
+  Checkbox,
 } from "@mui/material";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
 
@@ -250,6 +251,56 @@ export default function Transfer() {
                 sx={{ ...commonInputStyles }}
               />
             </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "end",
+              gap: 4,
+            }}
+          >
+            <Box sx={{ width: "35%" }}>
+              <Typography sx={labelStyles}>الأجور</Typography>
+              <TextField
+                type="number"
+                placeholder="أجور"
+                fullWidth
+                sx={{
+                  ...commonInputStyles,
+
+                  "& input": {
+                    color: secondary,
+                  },
+
+                  "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button":
+                    {
+                      WebkitAppearance: "none",
+                      margin: 0,
+                    },
+
+                  "& input[type=number]": {
+                    MozAppearance: "textfield",
+                  },
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                width: "30%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                mr: 1,
+              }}
+            >
+              <Typography sx={{ ...labelStyles, mb: 0 }}>
+                متضمن الأجور
+              </Typography>
+              <Checkbox defaultChecked size="medium" />
+            </Box>
+            <Box sx={{ width: "35%" }}></Box>
           </Box>
           {/* حقل الملاح */}
           <Box>

@@ -94,7 +94,7 @@ export default function ExFilter({ filters, onChange, onSearch }) {
         my: 4,
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "center", gap: 6, ml: 6 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 6 }}>
         <Box>
           <Typography sx={labelStyles}>التاريخ من:</Typography>
           <TextField
@@ -216,7 +216,7 @@ export default function ExFilter({ filters, onChange, onSearch }) {
         value={filters.note}
         onChange={handleInputOnchange}
         sx={{
-          width: "93%",
+          width: "100%",
           "& .MuiOutlinedInput-root": {
             color: secondary,
             backgroundColor: darkBackground,
