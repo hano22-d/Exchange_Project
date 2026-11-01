@@ -200,14 +200,52 @@ async function ensureCashboxForDelete(transfer, tx) {
 // ==============================
 //   دالة الاستعلام
 // ==============================
-export async function queryTransferService(filters = {}) {
-  const rawDirection =
-    typeof filters.direction === "string" ? filters.direction.trim() : "";
+export async function queryTransferService(
+  filters = {},
+  pagination = {}
+) {
 
-  // نجهز حدود التاريخ من مدخلات الواجهة، إن وجدت
+  // ====================================
+  //  إعدادات Pagination والتحقق منها
+  // ====================================
+  const {
+    page = 1,
+    pageSize = 10,
+  } = pagination;
+
+  if (!Number.isSafeInteger(page) || page < 1) {
+    throw new RangeError("Page must be a valid positive integer.");
+  }
+
+  if (!Number.isSafeInteger(pageSize) || pageSize < 1) {
+    throw new RangeError("Page size must be a valid positive integer.");
+  }
+
+  // تحويل رقم الصفحة إلى موضع بداية يبدأ من صفر
+  const offset = (page - 1) * pageSize;
+
+  if (!Number.isSafeInteger(offset)) {
+    throw new RangeError("Pagination offset is invalid.");
+  }
+
+
+  // ====================================
+  //  تطبيع فلتر الاتجاه
+  // ====================================
+  const rawDirection =
+    typeof filters.direction === "string"
+      ? filters.direction.trim()
+      : "";
+
+
+  // ====================================
+  //  تجهيز حدود التاريخ
+  // ====================================
   const hasDateInputs =
-    (typeof filters.dateFrom === "string" && filters.dateFrom.trim() !== "") ||
-    (typeof filters.dateTo === "string" && filters.dateTo.trim() !== "");
+    (typeof filters.dateFrom === "string" &&
+      filters.dateFrom.trim() !== "") ||
+    (typeof filters.dateTo === "string" &&
+      filters.dateTo.trim() !== "");
 
   const dateRange = hasDateInputs
     ? buildTimestampDateRange({
@@ -216,18 +254,33 @@ export async function queryTransferService(filters = {}) {
       })
     : {};
 
-  const dateFromTimestamp = dateRange.dateFromTimestamp;
+  const dateFromTimestamp =
+    dateRange.dateFromTimestamp;
 
-  const dateToExclusiveTimestamp = dateRange.dateToExclusiveTimestamp;
+  const dateToExclusiveTimestamp =
+    dateRange.dateToExclusiveTimestamp;
 
-  // تطبيع المرشحات والتحقق منها داخل دالة الاستعلام
+
+  // ====================================
+  //  تطبيع بقية الفلاتر
+  // ====================================
+  const rawFullname = filters.fullname ?? filters.fullName;
+
   const normalizedFilters = {
     dateFromTimestamp,
     dateToExclusiveTimestamp,
 
     direction: rawDirection,
 
-    fullName: filters.fullName.toString().trim().toLocaleLowerCase(),
+    fullname:
+      typeof rawFullname === "string"
+        ? rawFullname.trim().toLocaleLowerCase()
+        : "",
+
+    currency:
+      typeof filters.currency === "string"
+        ? filters.currency.trim().toUpperCase()
+        : "",
 
     note:
       typeof filters.note === "string"
@@ -240,7 +293,10 @@ export async function queryTransferService(filters = {}) {
         : "",
   };
 
-  //خطوات التحقق من الفلاتر
+
+  // ====================================
+  //  التحقق من صحة الفلاتر
+  // ====================================
   if (
     normalizedFilters.direction &&
     normalizedFilters.direction !== TRANSFER_DIRECTIONS.OUTGOING &&
@@ -249,7 +305,10 @@ export async function queryTransferService(filters = {}) {
     throw new Error("فلتر اتجاه الحوالة غير صالح");
   }
 
-  if (dateFromTimestamp != null && !Number.isFinite(dateFromTimestamp)) {
+  if (
+    dateFromTimestamp != null &&
+    !Number.isFinite(dateFromTimestamp)
+  ) {
     throw new Error("تاريخ بداية الفلترة غير صالح");
   }
 
@@ -268,14 +327,28 @@ export async function queryTransferService(filters = {}) {
     throw new Error("نطاق التاريخ غير صالح");
   }
 
-  const transfers = await runInTransaction(
+  // ====================================
+  //  تجهيز Pagination للـ Repository
+  // ====================================
+  const repositoryPagination = {
+    offset,
+    limit: pageSize,
+  };
+
+
+  // ====================================
+  //  تنفيذ الاستعلام
+  // ====================================
+  return runInTransaction(
     [TRANSFER_STORE_NAME],
     "readonly",
-    (tx) => transferRepository.queryTransfers(normalizedFilters, tx)
+    (tx) =>
+      transferRepository.queryTransfers(
+        tx,
+        normalizedFilters,
+        repositoryPagination
+      )
   );
-
-  // الترتيب من الاحدث للاقدم
-  return transfers.sort((a, b) => b.date - a.date);
 }
 
 // =================================

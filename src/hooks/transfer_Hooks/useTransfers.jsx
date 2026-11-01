@@ -1,82 +1,158 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import transferService from "../../services/transferService.js";
 
-export default function useTransfers(filters = {}) {
-  //استخراج قيم الفلاتر
-  const dateFrom = filters?.dateFrom ?? "";
-  const dateTo = filters?.dateTo ?? "";
-  const fullName =
-    typeof filters?.fullName === "string" ? filters.fullName.trim() : "";
+const PAGE_SIZE = 10;
 
-  const currency =
-    typeof filters?.currency === "string"
-      ? filters.currency.trim().toUpperCase()
-      : "";
+export default function useTransfers() {
 
-  const direction =
-    typeof filters?.direction === "string" ? filters.direction.trim() : "";
-
-  const note = typeof filters?.note === "string" ? filters.note.trim() : "";
-
+  // الحوالات الموجودة في الصفحة الحالية فقط
   const [transfers, setTransfers] = useState([]);
+
   const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState(null);
 
-  // رقم لكل طلب حتى نتجاهل نتائج الطلبات القديمة
+  // =================================
+  // حالة Pagination
+  // =================================
+  const [page, setPage] = useState(1);
+
+  const [totalItems, setTotalItems] = useState(0);
+
+  const pageSize = PAGE_SIZE;
+
+  // عدد الصفحات قيمة مشتقة
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  // منع الطلبات القديمة من تحديث الحالة
   const requestIdRef = useRef(0);
 
-  const refetch = useCallback(async () => {
-    const requestId = ++requestIdRef.current;
+  // آخر فلاتر بحث تم اعتمادها بنجاح
+  const activeFiltersRef = useRef({});
 
-    setLoading(true);
-    setError(null);
+  // =================================
+  // جلب صفحة محددة
+  // =================================
+  const fetchPage = useCallback(
+    async (filters, requestedPage) => {
+      const requestId = ++requestIdRef.current;
 
-    try {
-      const result = await transferService.queryTransferService({
-        dateFrom,
-        dateTo,
-        fullName,
-        currency,
+      setLoading(true);
+      setError(null);
 
-        direction,
+      try {
+        // طلب الصفحة من Service
+        let result = await transferService.queryTransferService(filters, {
+          page: requestedPage,
+          pageSize,
+        });
 
-        note,
-      });
+        // استخراج العدد الإجمالي
+        let resultTotalItems = result.totalItems;
 
-      // لا نحدّث الحالة بنتيجة طلب قديم
-      if (requestId === requestIdRef.current) {
-        setTransfers(result);
+        let actualPage = requestedPage;
+
+        const resultTotalPages = Math.ceil(resultTotalItems / pageSize);
+
+        // معالجة حالة خروج الصفحة المطلوبة عن النطاق
+        if (resultTotalPages > 0 && requestedPage > resultTotalPages) {
+          actualPage = resultTotalPages;
+
+          result = await transferService.queryTransferService(filters, {
+            page: actualPage,
+            pageSize,
+          });
+
+          resultTotalItems = result.totalItems;
+        }
+
+
+        if (requestId === requestIdRef.current) {
+          setTransfers(result.items ?? []);
+
+          setTotalItems(resultTotalItems);
+
+          setPage(resultTotalItems === 0 ? 1 : actualPage);
+
+          // اعتماد الفلاتر بعد نجاح الطلب
+          activeFiltersRef.current = filters;
+        }
+
+        return result;
+      } catch (error) {
+        if (requestId === requestIdRef.current) {
+          setError(error);
+        }
+
+        throw error;
+      } finally {
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+        }
+      }
+    },
+    [pageSize]
+  );
+
+  // =================================
+  // البحث بفلاتر جديدة
+  // =================================
+
+  const refetch = useCallback(
+    async (filters = {}) => {
+
+      const filtersSnapshot = { ...filters };
+
+      return fetchPage(filtersSnapshot, 1);
+    },
+    [fetchPage]
+  );
+
+  // =================================
+  // الانتقال إلى صفحة أخرى
+  // =================================
+  const goToPage = useCallback(
+    (nextPage) => {
+      if (!Number.isSafeInteger(nextPage) || nextPage < 1) {
+        throw new RangeError("Page must be a valid positive integer.");
       }
 
-      return result;
-    } catch (error) {
-      if (requestId === requestIdRef.current) {
-        setError(error);
+      // منع طلب صفحة غير موجودة
+      if (totalPages === 0 || nextPage > totalPages) {
+        return Promise.resolve(null);
       }
 
-      return null;
-    } finally {
-      if (requestId === requestIdRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [dateFrom, dateTo, fullName, currency, direction, note]);
+      // استخدام آخر فلاتر بحث تم حفظها
+      return fetchPage(activeFiltersRef.current, nextPage);
+    },
+    [fetchPage, totalPages]
+  );
 
+  // =================================
+  // الجلب الأولي عند فتح الصفحة
+  // =================================
   useEffect(() => {
     refetch().catch(() => {
-      // لعدم بقاء وعد غير معالج
+      // معالجة رفض Promise داخل useEffect
     });
 
     return () => {
-      // إبطال الطلب السابق عند تغيير الفلاتر
       requestIdRef.current += 1;
     };
   }, [refetch]);
+
 
   return {
     transfers,
     loading,
     error,
+
+    page,
+    pageSize,
+    totalItems,
+    totalPages,
+
     refetch,
+    goToPage,
   };
 }

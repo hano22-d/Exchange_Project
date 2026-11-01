@@ -298,34 +298,93 @@ async function applyCashboxDeltas(tx, deltas) {
   }
 }
 
-// ============  الاستعلام عن الحركات ========== //
-export async function queryExchangesService(filters = {}) {
+// ============ الاستعلام عن الحركات ========== //
+export async function queryExchangesService(
+  filters = {},
+  pagination = {}
+) {
+ 
+  const {
+    page = 1,
+    pageSize = 10,
+  } = pagination;
+
+  // التحقق من رقم الصفحة
+  if (!Number.isSafeInteger(page) || page < 1) {
+    throw new RangeError("Page must be a valid positive integer.");
+  }
+
+  // التحقق من حجم الصفحة
+  if (!Number.isSafeInteger(pageSize) || pageSize < 1) {
+    throw new RangeError("Page size must be a valid positive integer.");
+  }
+
+  const offset = (page - 1) * pageSize;
+
+  if (!Number.isSafeInteger(offset)) {
+    throw new RangeError("Pagination offset is invalid.");
+  }
+
+
+  // ====================================
+  //  تجهيز فلاتر التاريخ
+  // ====================================
+
   const dateRange = buildTimestampDateRange({
     dateFrom: filters.dateFrom || undefined,
     dateTo: filters.dateTo || undefined,
   });
 
+
+  // ====================================
+  //  تطبيع بقية الفلاتر
+  // ====================================
+
   const repositoryFilters = {
     ...dateRange,
 
     fromCurrency:
-      typeof filters.fromCurrency === "string" && filters.fromCurrency.trim()
+      typeof filters.fromCurrency === "string" &&
+      filters.fromCurrency.trim()
         ? filters.fromCurrency.trim().toUpperCase()
         : undefined,
 
     toCurrency:
-      typeof filters.toCurrency === "string" && filters.toCurrency.trim()
+      typeof filters.toCurrency === "string" &&
+      filters.toCurrency.trim()
         ? filters.toCurrency.trim().toUpperCase()
         : undefined,
 
-    note: typeof filters.note === "string" ? filters.note.trim() : "",
+    note:
+      typeof filters.note === "string"
+        ? filters.note.trim()
+        : "",
   };
 
-  console.log("Date Range:", dateRange);
-console.log("Repository Filters:", repositoryFilters);
 
-  return runInTransaction([EXCHANGES_STORE], "readonly", (tx) =>
-    exchangeRpository.queryExchanges(tx, repositoryFilters)
+  // ====================================
+  //  إعداد Pagination للـ Repository
+  // ====================================
+
+  const repositoryPagination = {
+    offset,
+    limit: pageSize,
+  };
+
+
+  // ====================================
+  //  تنفيذ الاستعلام
+  // ====================================
+
+  return runInTransaction(
+    [EXCHANGES_STORE],
+    "readonly",
+    (tx) =>
+      exchangeRpository.queryExchanges(
+        tx,
+        repositoryFilters,
+        repositoryPagination
+      )
   );
 }
 

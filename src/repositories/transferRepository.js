@@ -2,13 +2,10 @@ import { requestToPromise } from "../shared/utilsDB";
 
 const TRANSFER_STORE_NAME = "transfers";
 const DATE_INDEX_NAME = "dateIndex";
-const DIRECTION_INDEX_NAME = "directionIndex";
 
 // ==========================================
-//   دوال العمليات الاساسية
+// دوال العمليات الأساسية
 // ==========================================
-
-// جلب جميع الحوالات
 export function getAllTransfers(tx) {
   const store = tx.objectStore(TRANSFER_STORE_NAME);
 
@@ -44,160 +41,150 @@ export function deleteTransfer(id, tx) {
 }
 
 // ==========================================
-//    دوال الاستعلام الفرعية
+// دالة الاستعلام حسب نطاق التاريخ
 // ==========================================
+function buildTransferDateRange(filters = {}) {
+  const { dateFromTimestamp, dateToExclusiveTimestamp } = filters;
 
-// الاستعلام حسب الاتجاه: صادر أو وارد
-export function getTransfersByDirection(direction, tx) {
-  const store = tx.objectStore(TRANSFER_STORE_NAME);
+  const hasFromDate = dateFromTimestamp != null;
+  const hasToDate = dateToExclusiveTimestamp != null;
 
-  const index = store.index(DIRECTION_INDEX_NAME);
-
-  return requestToPromise(index.getAll(direction));
-}
-
-// الاستعلام حسب نطاق التاريخ
-export function getTransfersByDateRange(
-  { dateFromTimestamp, dateToExclusiveTimestamp },
-  tx
-) {
-  const store = tx.objectStore(TRANSFER_STORE_NAME);
-
-  const index = store.index(DATE_INDEX_NAME);
-
-  let range;
-
-  if (dateFromTimestamp != null && dateToExclusiveTimestamp != null) {
-    range = IDBKeyRange.bound(
+  // يوجد تاريخ بداية ونهاية
+  if (hasFromDate && hasToDate) {
+    return IDBKeyRange.bound(
       dateFromTimestamp,
       dateToExclusiveTimestamp,
       false,
       true
     );
-  } else if (dateFromTimestamp != null) {
-    range = IDBKeyRange.lowerBound(dateFromTimestamp);
-  } else {
-    range = IDBKeyRange.upperBound(dateToExclusiveTimestamp, true);
   }
 
-  return requestToPromise(index.getAll(range));
+  if (hasFromDate) {
+    return IDBKeyRange.lowerBound(dateFromTimestamp, false);
+  }
+
+  if (hasToDate) {
+    return IDBKeyRange.upperBound(dateToExclusiveTimestamp, true);
+  }
+
+  return null;
 }
 
 // ==========================================
-//    دوال إدارة الاستعلام
+// مطابقة الحوالة مع بقية الفلاتر
 // ==========================================
+function matchesTransferFilters(transfer, filters = {}) {
+  const { direction, fullname, currency, note, destination } = filters;
 
-// تحديد الاستعلام الأساسي حسب الأولوية:
-export function choosePrimaryQuery(filters = {}) {
-  const hasDateRange =
-    filters.dateFromTimestamp != null ||
-    filters.dateToExclusiveTimestamp != null;
-
-  if (hasDateRange) {
-    return "dateRange";
+  // فلترة الاتجاه
+  if (direction && transfer.direction !== direction) {
+    return false;
   }
 
-  if (filters.direction) {
-    return "direction";
+  // فلترة اسم صاحب الحوالة
+  if (fullname) {
+    const transferFullname = String(
+      transfer.fullName ?? transfer.fullname ?? ""
+    ).toLocaleLowerCase();
+  
+    if (!transferFullname.includes(fullname)) {
+      return false;
+    }
   }
 
-  return "all";
+  // فلترة العملة
+  if (currency && transfer.currency !== currency) {
+    return false;
+  }
+
+  // فلترة الملاحظات
+  if (note) {
+    const transferNote = String(transfer.note ?? "").toLocaleLowerCase();
+
+    if (!transferNote.includes(note)) {
+      return false;
+    }
+  }
+
+  // فلترة الوجهة
+  if (destination) {
+    const transferDestination = String(
+      transfer.destination ?? ""
+    ).toLocaleLowerCase();
+
+    if (!transferDestination.includes(destination)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
-// تطبيق الفلاتر المتبقية التي لم تستخدم في الاستعلام الأساسي
-export function applyRemainingTransferFilters(
-  transfers,
-  filters = {},
-  primaryQuery = "all"
-) {
-  const {
-    dateFromTimestamp,
-    dateToExclusiveTimestamp,
-    direction,
-    fullname = "",
-    note = "",
-    destination = "",
-  } = filters;
+// ==========================================
+// دالة الاستعلام الاساسية
+// ==========================================
+export function queryTransfers(tx, filters = {}, pagination = {}) {
+  const { offset = 0, limit = 10 } = pagination;
 
-  return transfers.filter((transfer) => {
-    if (primaryQuery !== "dateRange") {
-      if (dateFromTimestamp != null && transfer.date < dateFromTimestamp) {
-        return false;
+  // إنشاء نطاق التاريخ إن وجد
+  const dateRange = buildTransferDateRange(filters);
+
+  const store = tx.objectStore(TRANSFER_STORE_NAME);
+
+  const dateIndex = store.index(DATE_INDEX_NAME);
+
+  const request = dateIndex.openCursor(dateRange, "prev");
+
+  const items = [];
+
+  let totalItems = 0;
+
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => {
+      const cursor = request.result;
+
+      // انتهت قراءة السجلات
+      if (!cursor) {
+        resolve({
+          items,
+          totalItems,
+        });
+
+        return;
       }
 
-      if (
-        dateToExclusiveTimestamp != null &&
-        transfer.date >= dateToExclusiveTimestamp
-      ) {
-        return false;
+      const transfer = cursor.value;
+
+      // فحص بقية الفلاتر
+      const isMatch = matchesTransferFilters(transfer, filters);
+
+      if (isMatch) {
+        // تجاوز السجلات السابقة للصفحة المطلوبة
+        // ثم الاحتفاظ بعناصر الصفحة فقط
+        if (totalItems >= offset && items.length < limit) {
+          items.push(transfer);
+        }
+
+        // زيادة عدد النتائج المطابقة
+        totalItems++;
       }
-    }
 
-    if (
-      primaryQuery !== "direction" &&
-      direction &&
-      transfer.direction !== direction
-    ) {
-      return false;
-    }
+      // الانتقال إلى السجل التالي
+      cursor.continue();
+    };
 
-    if (
-      fullname &&
-      !(transfer.fullname ?? "").toLocaleLowerCase().includes(fullname)
-    ) {
-      return false;
-    }
-
-    if (note && !(transfer.note ?? "").toLocaleLowerCase().includes(note)) {
-      return false;
-    }
-
-    if (
-      destination &&
-      !(transfer.destination ?? "").toLocaleLowerCase().includes(destination)
-    ) {
-      return false;
-    }
-
-    return true;
+    request.onerror = () => {
+      reject(request.error || new Error("فشل جلب الحوالات."));
+    };
   });
 }
 
-// دالة الاستعلام العامة
-export async function queryTransfers(filters = {}, tx) {
-  const primaryQuery = choosePrimaryQuery(filters);
-
-  let transfers;
-
-  switch (primaryQuery) {
-    case "dateRange":
-      transfers = await getTransfersByDateRange(
-        {
-          dateFromTimestamp: filters.dateFromTimestamp,
-
-          dateToExclusiveTimestamp: filters.dateToExclusiveTimestamp,
-        },
-        tx
-      );
-      break;
-
-    case "direction":
-      transfers = await getTransfersByDirection(filters.direction, tx);
-      break;
-
-    default:
-      transfers = await getAllTransfers(tx);
-      break;
-  }
-
-  return applyRemainingTransferFilters(transfers, filters, primaryQuery);
-}
-
 const transferRepository = {
-    queryTransfers,
-    getTransferById,
-    addTransfer,
-    updateTransfer,
-    deleteTransfer
-}
-export default transferRepository
+  queryTransfers,
+  getTransferById,
+  addTransfer,
+  updateTransfer,
+  deleteTransfer,
+};
+
+export default transferRepository;

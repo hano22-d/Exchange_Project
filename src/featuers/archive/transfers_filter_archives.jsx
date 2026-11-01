@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Box,
   Divider,
@@ -9,9 +8,12 @@ import {
   MenuItem,
   Button,
 } from "@mui/material";
-import { FaSearch } from "react-icons/fa";
 
-export default function TrFilter({ onSearch }) {
+import { FaSearch } from "react-icons/fa";
+import { getSupportedCurrency } from "../../shared/currencydata/currencies";
+import useCashboxces from "../../hooks/cashbox_Hooks/usecashboxes";
+
+export default function TrFilter({ filters, onChange, onSearch }) {
   const primary = "rgba(250,229,110,0.992)";
   const secondary = "#ffffff";
   const text = "black";
@@ -20,13 +22,6 @@ export default function TrFilter({ onSearch }) {
   const borderColor = "rgba(250,229,110,0.45)";
 
   const FIELD_HEIGHT = 40;
-
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [direction, setDirection] = useState("");
-  const [currency, setCurrency] = useState("");
-  const [note, setNote] = useState("");
 
   const commonInputStyles = {
     "& .MuiOutlinedInput-root": {
@@ -64,23 +59,36 @@ export default function TrFilter({ onSearch }) {
     marginBottom: 1,
   };
 
-  const currencyOptions = [
-    { value: "SYP", label: "ليرة سورية (SYP)" },
-    { value: "USD", label: "دولار أمريكي (USD)" },
-    { value: "EUR", label: "يورو (EUR)" },
-    { value: "TRY", label: "ليرة تركية (TRY)" },
-  ];
+  // =================================
+  //   services
+  // =================================
+  const { cashboxes } = useCashboxces();
 
-  const handleSearch = () => {
-    onSearch({
-      dateFrom,
-      dateTo,
-      fullName,
-      direction,
-      currency,
-      note,
-    });
-  };
+  // =================================
+  // functions
+  // =================================
+  function handleInputChange(event) {
+    const { name, value } = event.target;
+
+    onChange((prevFilters) => ({
+      ...prevFilters,
+      [name]: value,
+    }));
+  }
+
+  // قائمة العملات حسب الصناديق المنشأة
+  const viewCreatedCashboxes = cashboxes.map((cashbox) => {
+    if (!cashbox) {
+      return null;
+    }
+    const getNameAr = getSupportedCurrency(cashbox.currency).nameAr;
+    const currencyLabel = `${cashbox.currency} - ${getNameAr}`;
+
+    return {
+      value: cashbox.currency,
+      currencyLabel,
+    };
+  });
 
   return (
     <Container
@@ -92,13 +100,23 @@ export default function TrFilter({ onSearch }) {
         my: 4,
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "center", gap: 6 }}>
+      {/* التاريخ */}
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 6,
+        }}
+      >
         <Box>
           <Typography sx={labelStyles}>التاريخ من:</Typography>
+
           <TextField
-            type="datetime-local"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
+            name="dateFrom"
+            type="date"
+            value={filters.dateFrom}
+            onChange={handleInputChange}
             sx={{
               ...commonInputStyles,
               width: "300px",
@@ -113,10 +131,12 @@ export default function TrFilter({ onSearch }) {
 
         <Box>
           <Typography sx={labelStyles}>التاريخ إلى:</Typography>
+
           <TextField
-            type="datetime-local"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
+            name="dateTo"
+            type="date"
+            value={filters.dateTo}
+            onChange={handleInputChange}
             sx={{
               ...commonInputStyles,
               width: "300px",
@@ -129,102 +149,131 @@ export default function TrFilter({ onSearch }) {
           />
         </Box>
       </Box>
+
+      {/* الاسم والاتجاه والعملة */}
+
       <Box
-        sx={{ display: "flex", justifyContent: "space-between", gap: 2, mt: 2 }}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 2,
+          mt: 2,
+        }}
       >
+        {/* الاسم الثلاثي */}
+
         <Box>
-          <Typography sx={labelStyles}> الاسم الثلاثي:</Typography>
+          <Typography sx={labelStyles}>الاسم الثلاثي:</Typography>
+
           <TextField
+            name="fullname"
             type="text"
-            placeholder="أدخل الأسم الثلاثي"
+            placeholder="أدخل الاسم الثلاثي"
             fullWidth
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            sx={{ width: 200, ...commonInputStyles }}
+            value={filters.fullname}
+            onChange={handleInputChange}
+            sx={{
+              width: 200,
+              ...commonInputStyles,
+            }}
           />
         </Box>
 
-        <Box>
-          <Typography sx={labelStyles}> الوجهة:</Typography>
-          <Box>
-            <Select
-              fullWidth
-              displayEmpty
-              value={direction}
-              onChange={(e) => setDirection(e.target.value)}
-              sx={{
-                width: 200,
-                ...commonInputStyles,
-                height: `${FIELD_HEIGHT}px`,
-                marginBottom: 2.5,
-                borderRadius: 2,
-
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: borderColor,
-                },
-
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: primary,
-                },
-
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: secondary,
-                },
-
-                backgroundColor: darkBackground,
-                color: secondary,
-              }}
-            >
-              <MenuItem value="outgoing">حوالة صادرة</MenuItem>
-              <MenuItem value="incoming">حوالة واردة</MenuItem>
-            </Select>
-          </Box>
-        </Box>
+        {/* اتجاه الحوالة */}
 
         <Box>
-          <Typography sx={labelStyles}>العملة:</Typography>
+          <Typography sx={labelStyles}>الاتجاه:</Typography>
+
           <Select
+            name="direction"
             fullWidth
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
+            displayEmpty
+            value={filters.direction}
+            onChange={handleInputChange}
             sx={{
               width: 200,
               ...commonInputStyles,
               height: `${FIELD_HEIGHT}px`,
-              marginBottom: 2.5,
               borderRadius: 2,
+              backgroundColor: darkBackground,
+              color: secondary,
 
               "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: borderColor,
+                borderColor,
               },
 
               "&:hover .MuiOutlinedInput-notchedOutline": {
                 borderColor: primary,
               },
+
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                 borderColor: secondary,
               },
-
-              backgroundColor: darkBackground,
-              color: secondary,
             }}
           >
-            {currencyOptions.map((currency) => (
+            <MenuItem value="">جميع الاتجاهات</MenuItem>
+
+            <MenuItem value="وارد">حوالة واردة</MenuItem>
+
+            <MenuItem value="صادر">حوالة صادرة</MenuItem>
+          </Select>
+        </Box>
+
+        {/* العملة */}
+
+        <Box>
+          <Typography sx={labelStyles}>العملة:</Typography>
+
+          <Select
+            name="currency"
+            fullWidth
+            displayEmpty
+            value={filters.currency}
+            onChange={handleInputChange}
+            sx={{
+              width: 200,
+              ...commonInputStyles,
+              height: `${FIELD_HEIGHT}px`,
+              borderRadius: 2,
+              backgroundColor: darkBackground,
+              color: secondary,
+
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor,
+              },
+
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: primary,
+              },
+
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: secondary,
+              },
+            }}
+          >
+            <MenuItem value="">جميع العملات</MenuItem>
+
+            {viewCreatedCashboxes.map((currency) => (
               <MenuItem key={currency.value} value={currency.value}>
-                {currency.label}
+                {currency.currencyLabel}
               </MenuItem>
             ))}
           </Select>
         </Box>
       </Box>
+
+      {/* الملاحظات */}
+
       <Typography sx={labelStyles}>الملاحظات</Typography>
+
       <TextField
+        name="note"
         multiline
         rows={1}
-        placeholder="ابحث في ملاحظات الحوالات ..."
+        placeholder="ابحث في ملاحظات الحوالات..."
         fullWidth
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
+        value={filters.note}
+        onChange={handleInputChange}
         sx={{
           "& .MuiOutlinedInput-root": {
             color: secondary,
@@ -232,7 +281,7 @@ export default function TrFilter({ onSearch }) {
             borderRadius: 2,
 
             "& fieldset": {
-              borderColor: borderColor,
+              borderColor,
             },
 
             "&:hover fieldset": {
@@ -250,12 +299,20 @@ export default function TrFilter({ onSearch }) {
           },
         }}
       />
+
       <Divider sx={{ backgroundColor: primary, my: 2 }} />
-      {/* زر البحث فقط في المنتصف */}
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
+
+      {/* زر البحث */}
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
         <Button
           variant="contained"
-          onClick={handleSearch}
+          onClick={onSearch}
           sx={{
             width: 200,
             display: "flex",
@@ -266,12 +323,14 @@ export default function TrFilter({ onSearch }) {
             fontSize: 15,
             fontWeight: "bold",
             gap: 0.5,
+
             "&:hover": {
               backgroundColor: primary,
             },
           }}
         >
           <FaSearch />
+
           <Typography>بحث</Typography>
         </Button>
       </Box>

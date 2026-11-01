@@ -3,227 +3,184 @@ import { requestToPromise } from "../shared/utilsDB";
 
 const EXCHANGE_OBJECT_STORE = "exchanges";
 
-// ========== دوال العمليات الأساسية ========== //
+// ========================================
+// دوال العمليات الأساسية
+// ========================================
+
 export async function getAllExchanges(tx) {
   const store = tx.objectStore(EXCHANGE_OBJECT_STORE);
 
-  const result = await requestToPromise(store.getAll());
-
-  return result;
+  return await requestToPromise(store.getAll());
 }
 
 async function getExchangeById(transaction, id) {
   const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const request = store.get(id);
 
-  return await requestToPromise(request);
+  return await requestToPromise(store.get(id));
 }
 
 async function addExchange(transaction, newExchange) {
   const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const request = store.add(newExchange);
 
-  return await requestToPromise(request);
+  return await requestToPromise(store.add(newExchange));
 }
 
 async function updateExchange(transaction, updatedExchange) {
   const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const request = store.put(updatedExchange);
 
-  await requestToPromise(request);
+  await requestToPromise(store.put(updatedExchange));
 
   return updatedExchange;
 }
 
 async function deleteExchange(transaction, id) {
   const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const request = store.delete(id);
 
-  return await requestToPromise(request);
+  return await requestToPromise(store.delete(id));
 }
 
-// ========== دوال الفهرسة ========== //
-async function getExchangesByFromCurrency(transaction, currency) {
-  const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const index = store.index(indexesName.fromCurrency);
-  const request = index.getAll(currency);
-
-  return await requestToPromise(request);
-}
-
-async function getExchangesByToCurrency(transaction, currency) {
-  const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const index = store.index(indexesName.toCurrency);
-  const request = index.getAll(currency);
-
-  return await requestToPromise(request);
-}
-
-async function getExchangeByCurrencyPair(
-  transaction,
-  fromCurrency,
-  toCurrency
-) {
-  const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const index = store.index(indexesName.currencyPair);
-
-  const range = IDBKeyRange.only([fromCurrency, toCurrency]);
-  const request = index.getAll(range);
-
-  return await requestToPromise(request);
-}
-
-async function getExchangeByDateRange(transaction, fromTimeStamp, toTimeStamp) {
-  const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
-  const index = store.index(indexesName.date);
-
-  let range;
-
-  if (fromTimeStamp && toTimeStamp) {
-    range = IDBKeyRange.bound(fromTimeStamp, toTimeStamp, false, true);
-  } else if (fromTimeStamp) {
-    range = IDBKeyRange.lowerBound(fromTimeStamp, false);
-  } else {
-    range = IDBKeyRange.upperBound(toTimeStamp, true);
-  }
-
-  const request = index.getAll(range);
-
-  return await requestToPromise(request);
-}
-
-// ========== دالة اختيار الفهرس الاساسي ========== //
-export function choosePrimaryQuery(filters) {
-  const {
-    fromCurrency,
-    toCurrency,
-    dateFromTimestamp,
-    dateToExclusiveTimestamp,
-  } = filters;
-
-  const hasFromCurrency = Boolean(fromCurrency);
-  const hasToCurrency = Boolean(toCurrency);
+// ==========================================
+// دالة الاستعلام حسب نطاق التاريخ
+// ==========================================
+function buildDateRange(filters) {
+  const { dateFromTimestamp, dateToExclusiveTimestamp } = filters;
 
   const hasFromDate = dateFromTimestamp != null;
   const hasToDate = dateToExclusiveTimestamp != null;
 
-  if (hasFromCurrency && hasToCurrency) {
-    return "currencyPair";
-  } else if (hasFromDate && hasToDate) {
-    return "dateRange";
-  } else if (hasFromCurrency) {
-    return "fromCurrency";
-  } else if (hasToCurrency) {
-    return "toCurrency";
-  } else if (hasFromDate || hasToDate) {
-    return "dateRange";
+  if (hasFromDate && hasToDate) {
+    return IDBKeyRange.bound(
+      dateFromTimestamp,
+      dateToExclusiveTimestamp,
+      false,
+      true
+    );
   }
 
-  return "all";
+  if (hasFromDate) {
+    return IDBKeyRange.lowerBound(dateFromTimestamp, false);
+  }
+
+  if (hasToDate) {
+    return IDBKeyRange.upperBound(dateToExclusiveTimestamp, true);
+  }
+
+  return null;
 }
 
-// ========== دالة تطبيق الفلاتر المتبقية =========== //
-export function applyRamainingFilters(exchanges, primaryQuery, filters = {}) {
-  const {
-    fromCurrency,
-    toCurrency,
-    dateFromTimestamp,
-    dateToExclusiveTimestamp,
-    note,
-  } = filters;
+// ========================================
+// التحقق من مطابقة الحركة للفلاتر
+// ========================================
 
-  return exchanges.filter((exchange) => {
-    if (
-      fromCurrency &&
-      primaryQuery !== "fromCurrency" &&
-      exchange.fromCurrency !== fromCurrency
-    ) {
+function matchesExchangeFilters(exchange, filters) {
+  const { fromCurrency, toCurrency, note } = filters;
+
+  // فلترة عملة المصدر
+  if (fromCurrency && exchange.fromCurrency !== fromCurrency) {
+    return false;
+  }
+
+  // فلترة عملة الوجهة
+  if (toCurrency && exchange.toCurrency !== toCurrency) {
+    return false;
+  }
+
+  // فلترة الملاحظات
+  if (note) {
+    const exchangeNote = String(exchange.note ?? "").toLowerCase();
+
+    const searchNote = note.trim().toLowerCase();
+
+    if (!exchangeNote.includes(searchNote)) {
       return false;
     }
+  }
 
-    if (
-      toCurrency &&
-      primaryQuery !== "toCurrency" &&
-      exchange.toCurrency !== toCurrency
-    ) {
-      return false;
-    }
+  return true;
+}
 
-    if (primaryQuery !== "dateRange") {
-      if (dateFromTimestamp != null && exchange.date < dateFromTimestamp) {
-        return false;
+// ========================================
+// دالة الاستعلام الاساسية
+// ========================================
+
+export function queryExchanges(transaction, filters = {}, pagination = {}) {
+  // استخراج معلومات Pagination
+  const { offset = 0, limit = 10 } = pagination;
+
+  // قيم احتياطية صحيحة
+  const safeOffset = Number.isInteger(offset) && offset >= 0 ? offset : 0;
+
+  const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 10;
+
+  // تجهيز الفلاتر النصية
+  const normalizedFilters = {
+    fromCurrency:
+      typeof filters.fromCurrency === "string"
+        ? filters.fromCurrency.trim().toUpperCase()
+        : "",
+
+    toCurrency:
+      typeof filters.toCurrency === "string"
+        ? filters.toCurrency.trim().toUpperCase()
+        : "",
+
+    note:
+      typeof filters.note === "string" ? filters.note.trim().toLowerCase() : "",
+  };
+
+  // تحديد النطاق الزمني
+  const dateRange = buildDateRange(filters);
+
+  // الوصول إلى مخزن الحركات وفهرس التاريخ
+  const store = transaction.objectStore(EXCHANGE_OBJECT_STORE);
+
+  const dateIndex = store.index(indexesName.date);
+
+  // فتح Cursor بترتيب تنازلي حسب التاريخ
+  const request = dateIndex.openCursor(dateRange, "prev");
+
+  // تخزين عناصر الصفحة فقط
+  const items = [];
+
+  // عدد جميع الحركات المطابقة
+  let totalItems = 0;
+
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => {
+      const cursor = request.result;
+
+      // انتهت قراءة السجلات
+      if (!cursor) {
+        resolve({
+          items,
+          totalItems,
+        });
+
+        return;
       }
 
-      if (
-        dateToExclusiveTimestamp != null &&
-        exchange.date >= dateToExclusiveTimestamp
-      ) {
-        return false;
+      const exchange = cursor.value;
+
+      const isMatch = matchesExchangeFilters(exchange, normalizedFilters);
+
+      if (isMatch) {
+        // التحقق من الوصول للصفخة المطلوبة
+        if (totalItems >= safeOffset && items.length < safeLimit) {
+          items.push(exchange);
+        }
+
+        // زيادة عدد النتائج المطابقة
+        totalItems++;
       }
-    }
 
-    // فلترة الملاحظات
-    if (note) {
-      const exchangeNote = String(exchange.note ?? "").toLowerCase();
-      const searchNote = note.trim().toLowerCase();
+      // الانتقال إلى السجل التالي
+      cursor.continue();
+    };
 
-      if (!exchangeNote.includes(searchNote)) {
-        return false;
-      }
-    }
-
-    return true;
+    request.onerror = () => {
+      reject(request.error || new Error("فشل جلب حركات الصرف."));
+    };
   });
-}
-
-// ======== دالة الاستعلام العامة ======== //
-export async function queryExchanges(transaction, filters = {}) {
-  const {
-    fromCurrency,
-    toCurrency,
-    dateFromTimestamp,
-    dateToExclusiveTimestamp,
-  } = filters;
-
-  const primaryQuery = choosePrimaryQuery(filters);
-
-  let exchanges;
-
-  switch (primaryQuery) {
-    case "currencyPair": {
-      exchanges = await getExchangeByCurrencyPair(
-        transaction,
-        fromCurrency,
-        toCurrency
-      );
-      break;
-    }
-
-    case "dateRange": {
-      exchanges = await getExchangeByDateRange(
-        transaction,
-        dateFromTimestamp,
-        dateToExclusiveTimestamp
-      );
-      break;
-    }
-
-    case "fromCurrency": {
-      exchanges = await getExchangesByFromCurrency(transaction, fromCurrency);
-      break;
-    }
-
-    case "toCurrency": {
-      exchanges = await getExchangesByToCurrency(transaction, toCurrency);
-      break;
-    }
-
-    default: {
-      exchanges = await getAllExchanges(transaction);
-    }
-  }
-
-  return applyRamainingFilters(exchanges, primaryQuery, filters);
 }
 
 const exchangeRpository = {

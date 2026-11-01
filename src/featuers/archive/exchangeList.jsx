@@ -39,7 +39,21 @@ export default function ExchangeList({
   loading,
   emptyMessage = "لا توجد حركات صرف لعرضها",
 }) {
-  if (loading) return <h1>Loading...</h1>;
+  
+  if (loading) {
+    return (
+      <Typography
+        sx={{
+          color: COLORS.text,
+          textAlign: "center",
+          py: 5,
+          fontFamily,
+        }}
+      >
+        جاري تحميل حركات الصرف...
+      </Typography>
+    );
+  }
 
   return (
     <Box
