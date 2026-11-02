@@ -46,7 +46,7 @@ export default function useDebtActions() {
         return result;
       } catch (error) {
         setCreateError(error);
-        return null;
+        throw error
       } finally {
         setCreating(false);
       }
@@ -68,7 +68,7 @@ export default function useDebtActions() {
         return result;
       } catch (error) {
         setUpdateError(error);
-        return null;
+        throw error
       } finally {
         setUpdating(false);
       }

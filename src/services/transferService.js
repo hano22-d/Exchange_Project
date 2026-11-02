@@ -49,6 +49,14 @@ function normalizeTransfer(data) {
 
   return {
     fullName: typeof data.fullname === "string" ? data.fullname.trim() : "",
+    receiverFullname:
+      typeof data.receiverFullname === "string"
+        ? data.receiverFullname.trim()
+        : "",
+    senderPhone:
+      typeof data.senderPhone === "string" ? data.senderPhone.trim() : "",
+    receiverPhone:
+      typeof data.senderPhone === "string" ? data.receiverPhone.trim() : "",
 
     destination:
       typeof data.destination === "string" ? data.destination.trim() : "",
@@ -78,7 +86,11 @@ function normalizeTransfer(data) {
 // ==================================
 function validateTransfer(transfer) {
   if (!transfer.fullName) {
-    throw new Error("يرجى إدخال الاسم الثلاثي");
+    throw new Error("يرجى إدخال اسم المرسل");
+  }
+
+  if (!transfer.receiverFullname) {
+    throw new Error("يرجى إدخال اسم المستلم");
   }
 
   if (!transfer.destination) {
@@ -90,7 +102,7 @@ function validateTransfer(transfer) {
   }
 
   if (!Number.isFinite(transfer.amount) || transfer.amount <= 0) {
-    throw new Error("يجب أن يكون مبلغ الحوالة أكبر من صفر");
+    throw new Error("مبلغ الحوالة غير صالح");
   }
 
   if (
@@ -101,7 +113,7 @@ function validateTransfer(transfer) {
   }
 
   if (!Number.isFinite(transfer.wages) || transfer.wages < 0) {
-    throw new Error("أجور الحوالة يجب أن تكون صفرًا أو أكثر");
+    throw new Error("أجور الحوالة غير صالحة");
   }
 
   if (
@@ -200,18 +212,11 @@ async function ensureCashboxForDelete(transfer, tx) {
 // ==============================
 //   دالة الاستعلام
 // ==============================
-export async function queryTransferService(
-  filters = {},
-  pagination = {}
-) {
-
+export async function queryTransferService(filters = {}, pagination = {}) {
   // ====================================
   //  إعدادات Pagination والتحقق منها
   // ====================================
-  const {
-    page = 1,
-    pageSize = 10,
-  } = pagination;
+  const { page = 1, pageSize = 10 } = pagination;
 
   if (!Number.isSafeInteger(page) || page < 1) {
     throw new RangeError("Page must be a valid positive integer.");
@@ -228,24 +233,18 @@ export async function queryTransferService(
     throw new RangeError("Pagination offset is invalid.");
   }
 
-
   // ====================================
   //  تطبيع فلتر الاتجاه
   // ====================================
   const rawDirection =
-    typeof filters.direction === "string"
-      ? filters.direction.trim()
-      : "";
-
+    typeof filters.direction === "string" ? filters.direction.trim() : "";
 
   // ====================================
   //  تجهيز حدود التاريخ
   // ====================================
   const hasDateInputs =
-    (typeof filters.dateFrom === "string" &&
-      filters.dateFrom.trim() !== "") ||
-    (typeof filters.dateTo === "string" &&
-      filters.dateTo.trim() !== "");
+    (typeof filters.dateFrom === "string" && filters.dateFrom.trim() !== "") ||
+    (typeof filters.dateTo === "string" && filters.dateTo.trim() !== "");
 
   const dateRange = hasDateInputs
     ? buildTimestampDateRange({
@@ -254,12 +253,9 @@ export async function queryTransferService(
       })
     : {};
 
-  const dateFromTimestamp =
-    dateRange.dateFromTimestamp;
+  const dateFromTimestamp = dateRange.dateFromTimestamp;
 
-  const dateToExclusiveTimestamp =
-    dateRange.dateToExclusiveTimestamp;
-
+  const dateToExclusiveTimestamp = dateRange.dateToExclusiveTimestamp;
 
   // ====================================
   //  تطبيع بقية الفلاتر
@@ -293,7 +289,6 @@ export async function queryTransferService(
         : "",
   };
 
-
   // ====================================
   //  التحقق من صحة الفلاتر
   // ====================================
@@ -305,10 +300,7 @@ export async function queryTransferService(
     throw new Error("فلتر اتجاه الحوالة غير صالح");
   }
 
-  if (
-    dateFromTimestamp != null &&
-    !Number.isFinite(dateFromTimestamp)
-  ) {
+  if (dateFromTimestamp != null && !Number.isFinite(dateFromTimestamp)) {
     throw new Error("تاريخ بداية الفلترة غير صالح");
   }
 
@@ -335,19 +327,15 @@ export async function queryTransferService(
     limit: pageSize,
   };
 
-
   // ====================================
   //  تنفيذ الاستعلام
   // ====================================
-  return runInTransaction(
-    [TRANSFER_STORE_NAME],
-    "readonly",
-    (tx) =>
-      transferRepository.queryTransfers(
-        tx,
-        normalizedFilters,
-        repositoryPagination
-      )
+  return runInTransaction([TRANSFER_STORE_NAME], "readonly", (tx) =>
+    transferRepository.queryTransfers(
+      tx,
+      normalizedFilters,
+      repositoryPagination
+    )
   );
 }
 

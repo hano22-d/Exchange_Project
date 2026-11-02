@@ -42,7 +42,6 @@ export default function TransferList({
   loading,
   emptyMessage = "لا توجد حوالات لعرضها",
 }) {
-  
   if (loading) {
     return (
       <Typography
@@ -87,17 +86,16 @@ export default function TransferList({
           }}
         >
           {/* عناوين الأعمدة */}
-
           <TableHead>
             <TableRow>
               {[
                 "رقم الحوالة",
                 "التاريخ والوقت",
-                "الاسم الثلاثي",
+                "اسم المرسل",
+                "اسم المستلم",
                 "الوجهة",
                 "المبلغ",
                 "الاتجاه",
-                "الملاحظة",
                 "الإجراءات",
               ].map((heading) => (
                 <TableCell
@@ -125,9 +123,6 @@ export default function TransferList({
           <TableBody>
             {transfers.length > 0 ? (
               transfers.map((transfer) => {
-                // دعم الاسم القديم والجديد
-                const fullName = transfer.fullName ?? transfer.fullname ?? "—";
-
                 // تحديد اتجاه الحوالة
                 const isIncoming =
                   transfer.direction === "وارد" ||
@@ -201,11 +196,9 @@ export default function TransferList({
                       </Box>
                     </TableCell>
 
-                    {/* الاسم الثلاثي */}
-
+                    {/* اسم المرسل */}
                     <TableCell align="center" sx={cellSx}>
                       <Typography
-                        title={fullName}
                         sx={{
                           color: COLORS.text,
                           fontFamily,
@@ -218,12 +211,31 @@ export default function TransferList({
                           mx: "auto",
                         }}
                       >
-                        {fullName}
+                        {transfer.fullName}
+                      </Typography>
+                    </TableCell>
+
+                    {/* اسم المستلم */}
+                    <TableCell align="center" sx={cellSx}>
+                      <Typography
+                        title={transfer.res}
+                        sx={{
+                          color: COLORS.text,
+                          fontFamily,
+                          fontSize: 14,
+                          fontWeight: 700,
+                          maxWidth: 180,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          mx: "auto",
+                        }}
+                      >
+                        {transfer.receiverFullname}
                       </Typography>
                     </TableCell>
 
                     {/* الوجهة */}
-
                     <TableCell align="center" sx={cellSx}>
                       <Typography
                         sx={{
@@ -238,7 +250,6 @@ export default function TransferList({
                     </TableCell>
 
                     {/* المبلغ والعملة */}
-
                     <TableCell align="center" sx={cellSx}>
                       <Typography
                         component="span"
@@ -276,33 +287,6 @@ export default function TransferList({
                         }}
                       >
                         {directionLabel}
-                      </Typography>
-                    </TableCell>
-
-                    {/* الملاحظة */}
-
-                    <TableCell
-                      align="center"
-                      sx={{
-                        ...cellSx,
-                        maxWidth: 190,
-                      }}
-                    >
-                      <Typography
-                        title={transfer.note || ""}
-                        sx={{
-                          color: transfer.note ? COLORS.text : COLORS.muted,
-                          fontSize: 14,
-                          fontFamily,
-                          fontWeight: 500,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: 180,
-                          mx: "auto",
-                        }}
-                      >
-                        {transfer.note || "—"}
                       </Typography>
                     </TableCell>
 

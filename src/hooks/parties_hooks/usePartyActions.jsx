@@ -20,7 +20,7 @@ export default function usePartyActions() {
       return await partyService.addPartyService(formData);
     } catch (error) {
       setCreateError(error);
-      return null;
+      throw error
     } finally {
       setCreating(false);
     }
@@ -50,7 +50,7 @@ export default function usePartyActions() {
       return await partyService.deletePartyService(id);
     } catch (error) {
       setDeleteError(error);
-      return null;
+      throw error
     } finally {
       setDeleting(false);
     }

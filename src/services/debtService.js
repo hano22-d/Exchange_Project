@@ -2,7 +2,7 @@ import { getPartyById } from "../repositories/partyRepository.js";
 import { runInTransaction } from "../db/transaction.js";
 import debtRepository from "../repositories/debtRepository.js";
 import cashboxRepository from "../repositories/cashboxrepository.js";
-
+import { getTimestampFromDateTimeLocal } from "../shared/utilsDate.js";
 
 const PARTIES_STORE = "parties";
 const DEBTS_STORE = "debts";
@@ -45,7 +45,13 @@ function normalizeDebtData(data, currentDebt = null) {
         ? (data.note ?? currentDebt?.note ?? "").trim()
         : data.note ?? currentDebt?.note,
 
-    date: data.date ?? currentDebt?.date ?? Date.now(),
+    date:
+      (typeof data.date === "string"
+        ? getTimestampFromDateTimeLocal(data.date)
+        : "") ??
+      (typeof currentDebt.date === "string"
+        ? getTimestampFromDateTimeLocal(currentDebt.date)
+        : ""),
 
     updatedAt: Date.now(),
   };
@@ -322,10 +328,10 @@ export function deleteDebtService(id) {
 }
 
 const debtService = {
-    getPartyDebtAccountService,
-    queryDebtsService,
-    addDebtService,
-    updateDebtService,
-    deleteDebtService
-}
-export default debtService
+  getPartyDebtAccountService,
+  queryDebtsService,
+  addDebtService,
+  updateDebtService,
+  deleteDebtService,
+};
+export default debtService;

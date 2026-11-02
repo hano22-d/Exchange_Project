@@ -137,7 +137,7 @@ export function queryExchanges(transaction, filters = {}, pagination = {}) {
   const dateIndex = store.index(indexesName.date);
 
   // فتح Cursor بترتيب تنازلي حسب التاريخ
-  const request = dateIndex.openCursor(dateRange, "prev");
+  const request = dateIndex.openCursor(dateRange);
 
   // تخزين عناصر الصفحة فقط
   const items = [];

@@ -1,5 +1,6 @@
 import { requestToPromise } from "../shared/utilsDB";
 
+
 const PARTIES_STORE = "parties";
 
 // جلب جميع الجهات

@@ -1,5 +1,5 @@
-
-import { runInTransaction } from "../database/transaction.js";
+import { runInTransaction } from "../db/transaction.js";
+import debtRepository from "../repositories/debtRepository.js";
 
 import {
   getAllParties,
@@ -9,8 +9,6 @@ import {
   updateParty,
   deleteParty,
 } from "../repositories/partyRepository.js";
-
-import { getAllDebts } from "../repositories/debtRepository.js";
 
 const PARTIES_STORE = "parties";
 const DEBTS_STORE = "debts";
@@ -35,6 +33,7 @@ function normalizePartyData(data, currentParty = null) {
       typeof data.fullName === "string"
         ? data.fullName.trim()
         : currentParty?.fullName ?? "",
+    fhoneNumber: typeof data.fhoneNumber === "string" ? data.fhoneNumber : "",
   };
 }
 
@@ -47,86 +46,63 @@ function validatePartyData(party) {
 
 // جلب جميع الجهات
 export function getAllPartiesService() {
-  return runInTransaction(
-    [PARTIES_STORE],
-    "readonly",
-    async (tx) => {
-      return getAllParties(tx);
-    }
-  );
+  return runInTransaction([PARTIES_STORE], "readonly", async (tx) => {
+    return getAllParties(tx);
+  });
 }
 
 // جلب جهة حسب id
 export function getPartyByIdService(id) {
-  return runInTransaction(
-    [PARTIES_STORE],
-    "readonly",
-    async (tx) => {
-      return getPartyById(normalizeId(id), tx);
-    }
-  );
+  return runInTransaction([PARTIES_STORE], "readonly", async (tx) => {
+    return getPartyById(normalizeId(id), tx);
+  });
 }
 
 // البحث عن جهة حسب الاسم
 export function searchPartiesByNameService(name) {
-  return runInTransaction(
-    [PARTIES_STORE],
-    "readonly",
-    async (tx) => {
-      return searchPartiesByName(name, tx);
-    }
-  );
+  return runInTransaction([PARTIES_STORE], "readonly", async (tx) => {
+    return searchPartiesByName(name, tx);
+  });
 }
 
 // إضافة جهة
 export function addPartyService(formData) {
-  return runInTransaction(
-    [PARTIES_STORE],
-    "readwrite",
-    async (tx) => {
-      const party = normalizePartyData(formData);
+  return runInTransaction([PARTIES_STORE], "readwrite", async (tx) => {
+    const party = normalizePartyData(formData);
 
-      validatePartyData(party);
+    validatePartyData(party);
 
-      const id = await addParty(party, tx);
+    const id = await addParty(party, tx);
 
-      return {
-        id,
-        ...party,
-      };
-    }
-  );
+    return {
+      id,
+      ...party,
+    };
+  });
 }
 
 // تعديل جهة
 export function updatePartyService(id, formData) {
-  return runInTransaction(
-    [PARTIES_STORE],
-    "readwrite",
-    async (tx) => {
-      const partyId = normalizeId(id);
+  return runInTransaction([PARTIES_STORE], "readwrite", async (tx) => {
+    const partyId = normalizeId(id);
 
-      const currentParty = await getPartyById(
-        partyId,
-        tx
-      );
+    const currentParty = await getPartyById(partyId, tx);
 
-      if (!currentParty) {
-        throw new Error("الجهة غير موجودة");
-      }
-
-      const updatedParty = {
-        id: currentParty.id,
-        ...normalizePartyData(formData, currentParty),
-      };
-
-      validatePartyData(updatedParty);
-
-      await updateParty(updatedParty, tx);
-
-      return updatedParty;
+    if (!currentParty) {
+      throw new Error("الجهة غير موجودة");
     }
-  );
+
+    const updatedParty = {
+      id: currentParty.id,
+      ...normalizePartyData(formData, currentParty),
+    };
+
+    validatePartyData(updatedParty);
+
+    await updateParty(updatedParty, tx);
+
+    return updatedParty;
+  });
 }
 
 // حذف جهة
@@ -143,12 +119,10 @@ export function deletePartyService(id) {
         throw new Error("الجهة غير موجودة");
       }
 
-      const debts = await getAllDebts(partyId, tx);
+      const debts = await debtRepository.getAllDebts(partyId, tx);
 
       if (debts.length > 0) {
-        throw new Error(
-          "لا يمكن حذف الجهة لوجود حركات دين مرتبطة بها"
-        );
+        throw new Error("لا يمكن حذف الجهة لوجود حركات دين مرتبطة بها");
       }
 
       await deleteParty(partyId, tx);
@@ -158,11 +132,11 @@ export function deletePartyService(id) {
   );
 }
 const partyService = {
-    getAllPartiesService,
-    getPartyByIdService,
-    searchPartiesByNameService,
-    addPartyService,
-    updatePartyService,
-    deletePartyService,
-}
-export default partyService
+  getAllPartiesService,
+  getPartyByIdService,
+  searchPartiesByNameService,
+  addPartyService,
+  updatePartyService,
+  deletePartyService,
+};
+export default partyService;

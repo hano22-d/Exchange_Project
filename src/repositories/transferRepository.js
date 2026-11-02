@@ -133,7 +133,7 @@ export function queryTransfers(tx, filters = {}, pagination = {}) {
 
   const dateIndex = store.index(DATE_INDEX_NAME);
 
-  const request = dateIndex.openCursor(dateRange, "prev");
+  const request = dateIndex.openCursor(dateRange);
 
   const items = [];
 
