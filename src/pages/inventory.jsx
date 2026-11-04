@@ -1,8 +1,13 @@
+import { Box } from "@mui/material";
+import DeptDetails from "../featuers/archive/depts_details_archive";
+import TransferDetails from "../featuers/archive/transfers_details_archive";
+
+
 export default function Inventory() {
   return (
-    <div>
-      <h1>Inventory Page</h1>
-      <p>This is the inventory page of our application.</p>
-    </div>
+    <Box sx={{p: 4}}>
+      <TransferDetails/>
+      <DeptDetails/>
+    </Box>
   );
 }
