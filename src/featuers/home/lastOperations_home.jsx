@@ -6,11 +6,15 @@ import {
   FaScaleBalanced,
 } from "react-icons/fa6";
 import { MdFactCheck, MdHistory } from "react-icons/md";
-export default function LastOper({cashboxes}) {
+import { Link } from "react-router-dom";
+import "../../app/App.css";
 
+export default function LastOper({ cashboxes }) {
   // الصناديق الموجبة & السالبة
-  const positiveBalance = cashboxes.filter(cashbox => cashbox.balance > 0).length;
-  const negativeBalance = cashboxes.length - positiveBalance
+  const positiveBalance = cashboxes.filter(
+    (cashbox) => cashbox.balance > 0
+  ).length;
+  const negativeBalance = cashboxes.length - positiveBalance;
 
   const oper = [
     {
@@ -66,22 +70,20 @@ export default function LastOper({cashboxes}) {
               آخر العمليات المنفذة
             </Typography>
           </Box>
-          <Button
-            variant="outlined"
-            sx={{
+          <Link
+            to={"/archive"}
+            style={{
+              textDecoration: "none",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "2px solid rgba(250, 229, 110, 0.992)",
               color: "rgba(250, 229, 110, 0.992)",
-              borderRadius: 2,
-              borderColor: "rgba(250, 229, 110, 0.992)",
               fontFamily: "'Alyamama', sans-serif",
-              fontSize: 10,
-              p: "8px 16px",
-              "&:hover": {
-                backgroundColor: "rgba(250, 229, 110, 0.16)",
-              },
             }}
+            className="btnhover"
           >
             عرض الأرشيف الكامل
-          </Button>
+          </Link>
         </Box>
 
         <Box
@@ -396,32 +398,6 @@ export default function LastOper({cashboxes}) {
                 {negativeBalance}
               </Typography>
             </Card>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: 6,
-              backgroundColor: "#383838",
-              gap: 1,
-              p: 1,
-              mt: 1,
-            }}
-          >
-            <Typography
-              sx={{
-                color: "rgba(250, 229, 110, 0.992)",
-                fontFamily: "'Alyamama', sans-serif",
-              }}
-            >
-              الحالة العامة:
-            </Typography>
-            <Typography
-              sx={{ color: "#00ff80", fontFamily: "'Alyamama', sans-serif" }}
-            >
-              ممتازة
-            </Typography>
           </Box>
         </Card>
       </Grid>

@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Paper,
   Table,
   TableBody,
@@ -11,8 +10,8 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import { formatSyriaDateTime } from "../../shared/utilsDate";
+import { Link } from "react-router-dom";
 
 const COLORS = {
   background: "#000000",
@@ -39,7 +38,6 @@ export default function ExchangeList({
   loading,
   emptyMessage = "لا توجد حركات صرف لعرضها",
 }) {
-  
   if (loading) {
     return (
       <Typography
@@ -240,31 +238,23 @@ export default function ExchangeList({
 
                     {/* فتح تفاصيل الحركة */}
                     <TableCell align="center" sx={cellSx}>
-                      <Button
-                        variant="outlined"
-                        startIcon={
-                          <VisibilityOutlinedIcon sx={{ fontSize: 17 }} />
-                        }
-                        sx={{
+                      <Link
+                        to={`/archive/exchange/${exchange.id}`}
+                        style={{
+                          textDecoration: "none",
                           minWidth: 100,
-                          px: 1.3,
-                          py: 0.65,
+                          padding: "6px 14px",
                           color: COLORS.goldLight,
-                          borderColor: COLORS.gold,
-                          borderRadius: 1.2,
+                          border: `1px solid ${COLORS.gold}`,
+                          borderRadius: 3,
                           fontFamily: fontFamily,
                           fontSize: 14,
                           fontWeight: 700,
                           whiteSpace: "nowrap",
-                          "& .MuiButton-startIcon": { ml: 0.7, mr: 0 },
-                          "&:hover": {
-                            borderColor: COLORS.goldLight,
-                            bgcolor: "rgba(232, 205, 58, 0.10)",
-                          },
                         }}
                       >
                         التفاصيل
-                      </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 );

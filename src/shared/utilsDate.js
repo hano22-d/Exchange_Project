@@ -284,3 +284,29 @@ export function formatSyriaDateTime(timestamp, locale = "en-SY") {
     timeZone: SYRIA_TIME_ZONE,
   });
 }
+
+//لتعبئة الحقول بالقيمة الاولية date - timeLocal إلى صيغة timestamp دالة تحويل
+export function formatTimestampFormDateTimeLocal(timestamp) {
+  if (!Number.isFinite(timestamp)) {
+    throw new Error("ال timestamp غير صالح");
+  }
+
+  const parts = Intl.DateTimeFormat("en-GB", {
+    timeZone: SYRIA_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(timestamp));
+
+  const values = Object.fromEntries(
+    parts.map(({ type, value }) => [type, value])
+  );
+
+  console.log(values);
+
+  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
+}

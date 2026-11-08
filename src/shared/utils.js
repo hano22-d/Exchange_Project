@@ -1,5 +1,5 @@
 import { getSupportedCurrency } from "./currencydata/currencies";
-
+import { getExchangeCalculationType } from "./currencydata/exchange-pairs";
 
 /* ==================== 
    دالة تنسيق الارقام 
@@ -57,4 +57,36 @@ export function calculateTargetAmount(fromAmount, rate, calculationType) {
   }
 
   return roundedResult;
+}
+
+// حساب toAmount
+export function calculateToAmount(exchangeForm) {
+  const fromCurrency = exchangeForm.fromCurrency.trim().toUpperCase();
+  const toCurrency = exchangeForm.toCurrency.trim().toUpperCase();
+  const fromAmount = Number(exchangeForm.fromAmount);
+  const rate = Number(exchangeForm.rate);
+
+  if (!fromCurrency || !toCurrency || !fromAmount || !rate) {
+    return null;
+  }
+
+  const calulateType = getExchangeCalculationType(fromCurrency, toCurrency);
+
+  return calculateTargetAmount(fromAmount, rate, calulateType);
+}
+
+// دالة استخراج عملات الصناديق المنشأة
+export function viewCreatedCashboxes(cashboxes) {
+ return cashboxes.map((cashbox) => {
+    if (!cashbox) {
+      return null;
+    }
+    const getNameAr = getSupportedCurrency(cashbox.currency).nameAr;
+    const currencyLabel = `${cashbox.currency} - ${getNameAr}`;
+
+    return {
+      value: cashbox.currency,
+      currencyLabel,
+    };
+  });
 }

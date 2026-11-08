@@ -13,11 +13,14 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import { FaLeftLong } from "react-icons/fa6";
 import { useState } from "react";
 import { useExchangeActions } from "../../hooks/exchanges-Hooks/useExchangeActions";
-import { getExchangeCalculationType } from "../../shared/currencydata/exchange-pairs";
-import { calculateTargetAmount, formatNumber } from "../../shared/utils";
+import {
+  calculateToAmount,
+  formatNumber,
+  viewCreatedCashboxes,
+} from "../../shared/utils";
 import BasicToast from "../../shared/ui/toast";
 import useCashboxces from "../../hooks/cashbox_Hooks/usecashboxes";
-import { getSupportedCurrency } from "../../shared/currencydata/currencies";
+import { useNavigate } from "react-router-dom";
 
 const primary = "rgba(250,229,110,0.992)";
 const secondary = "#ffffff";
@@ -80,6 +83,8 @@ export default function Exchange() {
     severity: "",
   });
 
+  const navigate = useNavigate();
+
   // ==== services ==== //
   const { createExchange, creating } = useExchangeActions();
   const { cashboxes } = useCashboxces();
@@ -105,13 +110,15 @@ export default function Exchange() {
     };
 
     try {
-      await createExchange(formData);
+      const exchange = await createExchange(formData);
 
       setToast({
         open: true,
         message: "تمت إضافة عملية الصرف بنجاح",
         severity: "success",
       });
+
+      navigate(`/archive/exchange/${exchange.id}`);
 
       setExchangeForm({
         fromCurrency: "",
@@ -131,34 +138,10 @@ export default function Exchange() {
   }
 
   // حساب toAmount
-  const toAmount = () => {
-    const fromCurrency = exchangeForm.fromCurrency.trim().toUpperCase();
-    const toCurrency = exchangeForm.toCurrency.trim().toUpperCase();
-    const fromAmount = Number(exchangeForm.fromAmount);
-    const rate = Number(exchangeForm.rate);
-
-    if (!fromCurrency || !toCurrency || !fromAmount || !rate) {
-      return null;
-    }
-
-    const calulateType = getExchangeCalculationType(fromCurrency, toCurrency);
-
-    return calculateTargetAmount(fromAmount, rate, calulateType);
-  };
+  const toAmount = calculateToAmount(exchangeForm);
 
   // قائمة العملات حسب الصناديق المنشأة
-  const viewCreatedCashboxes = cashboxes.map((cashbox) => {
-    if (!cashbox) {
-      return null
-    };
-    const getNameAr = getSupportedCurrency(cashbox.currency).nameAr;
-    const currencyLabel = `${cashbox.currency} - ${getNameAr}`;
-
-    return {
-      value: cashbox.currency,
-      currencyLabel,
-    };
-  });
+  const currencies = viewCreatedCashboxes(cashboxes);
 
   return (
     <>
@@ -286,7 +269,7 @@ export default function Exchange() {
                   color: secondary,
                 }}
               >
-                {viewCreatedCashboxes.map((currency) => (
+                {currencies.map((currency) => (
                   <MenuItem key={currency.value} value={currency.value}>
                     {currency.currencyLabel}
                   </MenuItem>
@@ -364,7 +347,7 @@ export default function Exchange() {
                   color: secondary,
                 }}
               >
-                {viewCreatedCashboxes.map((currency) => (
+                {currencies.map((currency) => (
                   <MenuItem key={currency.value} value={currency.value}>
                     {currency.currencyLabel}
                   </MenuItem>
@@ -395,7 +378,7 @@ export default function Exchange() {
                     fontWeight: "bold",
                   }}
                 >
-                  {formatNumber(toAmount())}
+                  {formatNumber(toAmount)}
                 </Typography>
               </Box>
             </Box>

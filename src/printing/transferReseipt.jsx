@@ -97,10 +97,18 @@ export default function TransferReceipt({ transfer }) {
 
       {/* بيانات الشخص والوجهة */}
       <div className="transfer-receipt-person">
-        <p className="transfer-receipt-label">الاسم:</p>
+        <p className="transfer-receipt-label">اسم المرسل:</p>
 
         <p className="transfer-receipt-person-name">
-          {transfer.fullname || "—"}
+          {transfer.fullName || "—"}
+        </p>
+      </div>
+
+      <div className="transfer-receipt-person">
+        <p className="transfer-receipt-label">اسم المستلم:</p>
+
+        <p className="transfer-receipt-person-name">
+          {transfer.receiverFullname || "—"}
         </p>
       </div>
 

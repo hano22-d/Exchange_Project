@@ -6,6 +6,7 @@ import {
   buildTimestampDateRange,
   getTimestampFromDateTimeLocal,
 } from "../shared/utilsDate.js";
+import { markBackupDirty } from "./backupSchedulerService.js";
 
 // ======================
 // الثوابت
@@ -364,7 +365,7 @@ export async function addTransferService(data) {
 
   validateTransfer(transfer);
 
-  return runInTransaction(
+  const result = runInTransaction(
     [TRANSFER_STORE_NAME, CASHBOX_STORE_NAME],
     "readwrite",
     async (tx) => {
@@ -387,6 +388,10 @@ export async function addTransferService(data) {
       };
     }
   );
+
+  markBackupDirty("created-transfer");
+
+  return result;
 }
 
 // ====================================

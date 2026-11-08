@@ -8,9 +8,17 @@ import {
 } from "react-icons/fa";
 import { FaCoins, FaHashtag, FaMoneyBillWave } from "react-icons/fa6";
 import { MdPayments } from "react-icons/md";
+import { useNavigate, useParams } from "react-router-dom";
+import { useExchange } from "../../hooks/exchanges-Hooks/useExchange";
+import { formatSyriaDateTime } from "../../shared/utilsDate";
+import ExchangeReceipt from "../../printing/ExchangeReseipt";
+import { useState } from "react";
+import EditExchangeDialog from "./EditExchangeDialog";
+import { useExchangeActions } from "../../hooks/exchanges-Hooks/useExchangeActions";
+import BasicToast from "../../shared/ui/toast";
+import DeleteDialog from "../../shared/ui/deleteDialog";
 
-export default function Details() {
-
+export default function ExchangeDetails() {
   const primary = "#FAE56E";
   const secondary = "#F5F5F5";
   const text = "#151515";
@@ -54,289 +62,386 @@ export default function Details() {
   };
 
   const buttonStyle = {
+    fontFamily,
     color: primary,
     borderColor: primary,
     fontSize: 15,
     gap: 1,
   };
 
-  return (
-    <Box
-      sx={{
-        backgroundColor: "#1E1E1E",
-        border: `1px solid ${primary}`,
-        borderRadius: 2,
-        p: 3,
-        mt: 2,
-      }}
-    >
-      {/* ================= Header ================= */}
+  // get Id
+  const { id } = useParams();
 
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* العنوان */}
+  const navigate = useNavigate();
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Typography
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              color: text,
-              backgroundColor: primary,
-              fontFamily,
-              fontSize: 20,
-              fontWeight: "bold",
-              borderRadius: 2,
-              p: 1,
-              gap: 1,
-            }}
-          >
-            <FaExchangeAlt
-              style={{
-                fontSize: 20,
-                color: primary,
-                backgroundColor: text,
-                borderRadius: 10,
-                padding: 6,
-              }}
-            />
+  // states
+  const [openDialog, setOpenDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "",
+  });
 
-            عملية صرافة
-          </Typography>
+  // services
+  const { exchange, loading, setExchangeData } = useExchange(
+    Number(id)
+  );
+  const { updateExchange, updating, deleteExchange, deleting } =
+    useExchangeActions();
 
-          <Typography
-            sx={{
-              color: secondary,
-              fontFamily,
-              fontSize: 20,
-              fontWeight: "bold",
-            }}
-          >
-            تفاصيل العملية:
-          </Typography>
-        </Box>
+  // ==== update function ==== //
+  async function handleUpdateExchange(updateForm) {
+    try {
+      const updateResult = await updateExchange(exchange.id, updateForm);
 
-        {/* رقم العملية والتاريخ */}
+      //تحديث حالة صفحة التفاصيل بعد نجاح التعديل
+      setExchangeData(updateResult);
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {/* رقم العملية */}
+      setToast({
+        open: true,
+        message: "تم التعديل بنجاح",
+        severity: "success",
+      });
 
-          <Box sx={infoBox}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <FaHashtag style={{ color: primary, fontSize: 22 }} />
+      setOpenDialog(false);
+    } catch (error) {
+      setToast({
+        open: true,
+        message: `فشل التعديل : ${error.message}`,
+        severity: "error",
+      });
+    }
+  }
 
-              <Typography
-                sx={{
-                  color: primary,
-                  fontFamily,
-                  fontSize: 20,
-                }}
-              >
-                رقم العملية
-              </Typography>
-            </Box>
+  // ==== delete function ==== //
+  async function handleDeleteExchange(id) {
+    try {
+      await deleteExchange(id);
 
-            <Typography sx={valueStyle}>68461648</Typography>
-          </Box>
+      setToast({
+        open: true,
+        message: "تم حذف الحركة بنجاح",
+        severity: "success",
+      });
 
-          {/* الوقت والتاريخ */}
+      setDeleteDialogOpen(false);
+      navigate("/archive");
+    } catch (error) {
+      setToast({
+        open: true,
+        message: `فشل الحذف: ${error.message}`,
+        severity: "error",
+      });
+    }
+  }
 
-          <Box sx={infoBox}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <FaCalendarAlt
-                style={{
-                  color: primary,
-                  fontSize: 22,
-                }}
-              />
-
-              <Typography
-                sx={{
-                  color: primary,
-                  fontFamily,
-                  fontSize: 20,
-                }}
-              >
-                الوقت والتاريخ
-              </Typography>
-            </Box>
-
-            <Typography sx={valueStyle}>
-              1/11/2026 - 12:30
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* ================= Details ================= */}
-
-      <Grid
-        container
-        spacing={3}
-        columns={12}
+  if (loading || !exchange) {
+    return (
+      <Typography
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#191919",
-          border: `1px solid ${border}`,
-          borderRadius: 2,
-          p: 2,
-          my: 2,
+          color: "#FFFFFF",
+          textAlign: "center",
+          py: 5,
+          fontFamily,
         }}
       >
-        {/* العملة المستلمة */}
+        جاري تحميل تفاصيل حركة الصرف ..
+      </Typography>
+    );
+  }
 
-        <Box sx={dataBox}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FaCoins style={iconStyle} />
+  return (
+    <>
+      {/* helpers components */}
+      <ExchangeReceipt exchange={exchange} />
 
-            <Typography sx={titleStyle}>
-              العملة المستلمة من الزبون:
+      {openDialog && (
+        <EditExchangeDialog
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          exchange={exchange}
+          onEditConfirm={handleUpdateExchange}
+          editLoading={updating}
+        />
+      )}
+
+      <DeleteDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={() => handleDeleteExchange(exchange.id)}
+        loading={deleting}
+      />
+
+      <BasicToast
+        open={toast.open}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        message={toast.message}
+        severity={toast.severity}
+      />
+
+      {/* main components */}
+      <Box
+        sx={{
+          backgroundColor: "#1E1E1E",
+          border: `1px solid ${primary}`,
+          borderRadius: 2,
+          p: 3,
+          mt: 2,
+        }}
+      >
+        {/* ================= Header ================= */}
+
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          {/* العنوان */}
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                color: text,
+                backgroundColor: primary,
+                fontFamily,
+                fontSize: 20,
+                fontWeight: "bold",
+                borderRadius: 2,
+                p: 1,
+                gap: 1,
+              }}
+            >
+              <FaExchangeAlt
+                style={{
+                  fontSize: 20,
+                  color: primary,
+                  backgroundColor: text,
+                  borderRadius: 10,
+                  padding: 6,
+                }}
+              />
+              عملية صرافة
+            </Typography>
+
+            <Typography
+              sx={{
+                color: secondary,
+                fontFamily,
+                fontSize: 20,
+                fontWeight: "bold",
+              }}
+            >
+              تفاصيل العملية:
             </Typography>
           </Box>
 
-          <Typography sx={valueStyle}>
-            USD دولار أمريكي
-          </Typography>
-        </Box>
+          {/* رقم العملية والتاريخ */}
 
-        {/* العملة المدفوعة */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {/* رقم العملية */}
 
-        <Box sx={dataBox}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FaCoins style={iconStyle} />
+            <Box sx={infoBox}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <FaHashtag style={{ color: primary, fontSize: 22 }} />
 
-            <Typography sx={titleStyle}>
-              العملة المدفوعة للزبون:
-            </Typography>
+                <Typography
+                  sx={{
+                    color: primary,
+                    fontFamily,
+                    fontSize: 20,
+                  }}
+                >
+                  رقم العملية
+                </Typography>
+              </Box>
+
+              <Typography sx={valueStyle}>{exchange.id}</Typography>
+            </Box>
+
+            {/* الوقت والتاريخ */}
+
+            <Box sx={infoBox}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <FaCalendarAlt
+                  style={{
+                    color: primary,
+                    fontSize: 22,
+                  }}
+                />
+
+                <Typography
+                  sx={{
+                    color: primary,
+                    fontFamily,
+                    fontSize: 20,
+                  }}
+                >
+                  الوقت والتاريخ
+                </Typography>
+              </Box>
+
+              <Typography sx={valueStyle}>
+                {formatSyriaDateTime(exchange.date).replace(",", " -")}
+              </Typography>
+            </Box>
           </Box>
-
-          <Typography sx={valueStyle}>
-            SYP ليرة سورية
-          </Typography>
         </Box>
 
-        {/* سعر الصرف */}
+        {/* ================= Details ================= */}
 
-        <Box sx={dataBox}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FaExchangeAlt style={iconStyle} />
-
-            <Typography sx={titleStyle}>
-              سعر الصرف:
-            </Typography>
-          </Box>
-
-          <Typography sx={valueStyle}>
-            1 USD = 2500 SYP
-          </Typography>
-        </Box>
-
-        {/* المبلغ المستلم */}
-
-        <Box sx={dataBox}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FaMoneyBillWave style={iconStyle} />
-
-            <Typography sx={titleStyle}>
-              المبلغ المستلم من الزبون:
-            </Typography>
-          </Box>
-
-          <Typography sx={valueStyle}>
-            100 USD
-          </Typography>
-        </Box>
-
-        {/* المبلغ المدفوع */}
-
-        <Box sx={dataBox}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FaMoneyBillWave style={iconStyle} />
-
-            <Typography sx={titleStyle}>
-              المبلغ المدفوع للزبون:
-            </Typography>
-          </Box>
-
-          <Typography sx={valueStyle}>
-            250000 SYP
-          </Typography>
-        </Box>
-
-        {/* تاريخ التحديث */}
-
-        <Box sx={dataBox}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FaCalendarAlt style={iconStyle} />
-
-            <Typography sx={titleStyle}>
-              تاريخ التحديث:
-            </Typography>
-          </Box>
-
-          <Typography sx={valueStyle}>
-            1/11/2026 - 12:30
-          </Typography>
-        </Box>
-
-        {/* الملاحظات */}
-
-        <Box
+        <Grid
+          container
+          spacing={3}
+          columns={12}
           sx={{
-            width: 1075,
-            backgroundColor: "#202020",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#191919",
             border: `1px solid ${border}`,
             borderRadius: 2,
             p: 2,
+            my: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <MdPayments style={iconStyle} />
+          {/* العملة المستلمة */}
 
-            <Typography sx={titleStyle}>
-              الملاحظات:
+          <Box sx={dataBox}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FaCoins style={iconStyle} />
+
+              <Typography sx={titleStyle}>
+                العملة المستلمة من الزبون:
+              </Typography>
+            </Box>
+
+            <Typography sx={valueStyle}>{exchange.fromCurrency}</Typography>
+          </Box>
+
+          {/* العملة المدفوعة */}
+
+          <Box sx={dataBox}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FaCoins style={iconStyle} />
+
+              <Typography sx={titleStyle}>العملة المدفوعة للزبون:</Typography>
+            </Box>
+
+            <Typography sx={valueStyle}>{exchange.toCurrency}</Typography>
+          </Box>
+
+          {/* سعر الصرف */}
+
+          <Box sx={dataBox}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FaExchangeAlt style={iconStyle} />
+
+              <Typography sx={titleStyle}>سعر الصرف:</Typography>
+            </Box>
+
+            <Typography sx={valueStyle}>{exchange.rate}</Typography>
+          </Box>
+
+          {/* المبلغ المستلم */}
+
+          <Box sx={dataBox}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FaMoneyBillWave style={iconStyle} />
+
+              <Typography sx={titleStyle}>المبلغ المستلم من الزبون:</Typography>
+            </Box>
+
+            <Typography sx={valueStyle}>{exchange.fromAmount}</Typography>
+          </Box>
+
+          {/* المبلغ المدفوع */}
+
+          <Box sx={dataBox}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FaMoneyBillWave style={iconStyle} />
+
+              <Typography sx={titleStyle}>المبلغ المدفوع للزبون:</Typography>
+            </Box>
+
+            <Typography sx={valueStyle}>{exchange.toAmount}</Typography>
+          </Box>
+
+          {/* تاريخ التحديث */}
+
+          <Box sx={dataBox}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FaCalendarAlt style={iconStyle} />
+
+              <Typography sx={titleStyle}>تاريخ التحديث:</Typography>
+            </Box>
+
+            <Typography sx={valueStyle}>
+              {formatSyriaDateTime(exchange.updatedAt)}
             </Typography>
           </Box>
 
-          <Typography sx={valueStyle}>
-            لا يوجد ملاحظات
-          </Typography>
-        </Box>
-      </Grid>
+          {/* الملاحظات */}
 
-      {/* ================= Buttons ================= */}
-
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Button variant="outlined" sx={buttonStyle}>
-          <FaPrint />
-          طباعة
-        </Button>
-
-        <Box sx={{ display: "flex", gap: 4 }}>
-          <Button variant="outlined" sx={buttonStyle}>
-            <FaEdit />
-            تعديل
-          </Button>
-
-          <Button
-            variant="contained"
+          <Box
             sx={{
-              ...buttonStyle,
-              color: text,
-              backgroundColor: primary,
+              width: 1075,
+              backgroundColor: "#202020",
+              border: `1px solid ${border}`,
+              borderRadius: 2,
+              p: 2,
             }}
           >
-            <FaTrash />
-            حذف
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <MdPayments style={iconStyle} />
+
+              <Typography sx={titleStyle}>الملاحظات:</Typography>
+            </Box>
+
+            <Typography sx={valueStyle}>{exchange.note}</Typography>
+          </Box>
+        </Grid>
+
+        {/* ================= Buttons ================= */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <Button
+            variant="outlined"
+            sx={{ ...buttonStyle, background: "#E5E4E2", color: "#111" }}
+            onClick={() => window.print()}
+          >
+            <FaPrint />
+            طباعة
           </Button>
+
+          <Box sx={{ display: "flex", gap: 4 }}>
+            <Button
+              variant="contained"
+              sx={{ ...buttonStyle, background: primary, color: "#111" }}
+              onClick={() => setOpenDialog(true)}
+            >
+              <FaEdit />
+              تعديل
+            </Button>
+
+            <Button
+              onClick={() => setDeleteDialogOpen(true)}
+              variant="contained"
+              sx={{
+                ...buttonStyle,
+                color: "white",
+                backgroundColor: "rgb(211, 47, 47)",
+              }}
+            >
+              <FaTrash />
+              حذف
+            </Button>
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </>
   );
 }

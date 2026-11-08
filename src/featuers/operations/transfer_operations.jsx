@@ -15,7 +15,8 @@ import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { useTransferActions } from "../../hooks/transfer_Hooks/useTransferActions";
 import BasicToast from "../../shared/ui/toast";
 import useCashboxces from "../../hooks/cashbox_Hooks/usecashboxes";
-import { getSupportedCurrency } from "../../shared/currencydata/currencies";
+import { viewCreatedCashboxes } from "../../shared/utils";
+import { useNavigate } from "react-router-dom";
 
 export default function Transfer() {
   const primary = "rgba(250,229,110,0.992)";
@@ -103,6 +104,8 @@ export default function Transfer() {
     severity: "",
   });
 
+  const navigate = useNavigate()
+
   // ==== services ====
   const { createTransfer, creating } = useTransferActions();
   const { cashboxes } = useCashboxces();
@@ -134,13 +137,15 @@ export default function Transfer() {
     };
 
     try {
-      await createTransfer(transferData);
+     const transfer = await createTransfer(transferData);
 
       setToast({
         open: true,
         message: "تمت إضافة الحوالة بنجاح",
         severity: "success",
       });
+
+      navigate(`/archive/transfer/${transfer.id}`);
 
       setTransferForm(EMPTY_TRANSFER_FORM);
     } catch (error) {
@@ -153,18 +158,7 @@ export default function Transfer() {
   }
 
   // قائمة العملات حسب الصناديق المنشأة
-  const viewCreatedCashboxes = cashboxes.map((cashbox) => {
-    if (!cashbox) {
-      return null;
-    }
-    const getNameAr = getSupportedCurrency(cashbox.currency).nameAr;
-    const currencyLabel = `${cashbox.currency} - ${getNameAr}`;
-
-    return {
-      value: cashbox.currency,
-      currencyLabel,
-    };
-  });
+  const currencies = viewCreatedCashboxes(cashboxes);
 
   return (
     <>
@@ -520,7 +514,7 @@ export default function Transfer() {
                     },
                   }}
                 >
-                  {viewCreatedCashboxes.map((currency) => (
+                  {currencies.map((currency) => (
                     <MenuItem key={currency.value} value={currency.value}>
                       {currency.currencyLabel}
                     </MenuItem>

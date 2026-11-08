@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { FaSearch } from "react-icons/fa";
 import useCashboxces from "../../hooks/cashbox_Hooks/usecashboxes";
-import { getSupportedCurrency } from "../../shared/currencydata/currencies";
+import { viewCreatedCashboxes } from "../../shared/utils";
 
 export default function ExFilter({ filters, onChange, onSearch }) {
   const primary = "rgba(250,229,110,0.992)";
@@ -71,18 +71,7 @@ export default function ExFilter({ filters, onChange, onSearch }) {
   }
 
   // قائمة العملات حسب الصناديق المنشأة
-  const viewCreatedCashboxes = cashboxes.map((cashbox) => {
-    if (!cashbox) {
-      return null;
-    }
-    const getNameAr = getSupportedCurrency(cashbox.currency).nameAr;
-    const currencyLabel = `${cashbox.currency} - ${getNameAr}`;
-
-    return {
-      value: cashbox.currency,
-      currencyLabel,
-    };
-  });
+  const currencies = viewCreatedCashboxes(cashboxes)
 
   return (
     <Container
@@ -163,7 +152,7 @@ export default function ExFilter({ filters, onChange, onSearch }) {
               color: secondary,
             }}
           >
-            {viewCreatedCashboxes.map((currency) => (
+            {currencies.map((currency) => (
               <MenuItem key={currency.value} value={currency.value}>
                 {currency.currencyLabel}
               </MenuItem>
@@ -199,7 +188,7 @@ export default function ExFilter({ filters, onChange, onSearch }) {
               color: secondary,
             }}
           >
-            {viewCreatedCashboxes.map((currency) => (
+            {currencies.map((currency) => (
               <MenuItem key={currency.value} value={currency.value}>
                 {currency.currencyLabel}
               </MenuItem>

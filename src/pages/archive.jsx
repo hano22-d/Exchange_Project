@@ -16,7 +16,6 @@ import ExchangeList from "../featuers/archive/exchangeList";
 import TransferList from "../featuers/archive/transferList";
 import useExchanges from "../hooks/exchanges-Hooks/useExchanges";
 import useTransfers from "../hooks/transfer_Hooks/useTransfers";
-import Details from "../featuers/archive/exchange_details_archive";
 
 // =================================
 // الفلاتر الابتدائية
@@ -332,7 +331,8 @@ export default function Archive() {
             className={`filterAndIcon ${
               activeFilter === "exchange" ? "active" : ""
             }`}
-            onClick={() => setActiveFilter("exchange")}
+            onClick={() => {setActiveFilter("exchange")
+            }}
           >
             <MdCurrencyExchange className="icon" />
             <Box className="filter">الصرف</Box>
@@ -542,7 +542,6 @@ export default function Archive() {
         </Box>
       </Box>
             <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-        <Details />
       </Box>
     </Box>
   );

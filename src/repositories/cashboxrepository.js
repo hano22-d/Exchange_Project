@@ -48,6 +48,7 @@ async function adjustCashboxBalance(transaction, currency, delta) {
   const updatedCashbox = {
     ...cashbox,
     balance: cashbox.balance + delta,
+    updatedAt: Date.now()
   };
   const putRequest = store.put(updatedCashbox);
 

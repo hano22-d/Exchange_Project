@@ -11,6 +11,7 @@ import exchangeRpository from "../repositories/exchangeRepository.js";
 import cashboxRepository from "../repositories/cashboxrepository.js";
 import { getExchangeCalculationType } from "../shared/currencydata/exchange-pairs.js";
 import { calculateTargetAmount } from "../shared/utils.js";
+import { markBackupDirty } from "./backupSchedulerService.js";
 
 // =========== إعدادات الخدمة ============= //
 const EXCHANGES_STORE = "exchanges";
@@ -92,7 +93,6 @@ function normalizeExchangeInput(input) {
     updatedAt: Date.now(),
   };
 }
-
 
 // ============= التحقق من بيانات حركة الصرف ============== //
 function validateExchangeInput(exchange) {
@@ -299,15 +299,8 @@ async function applyCashboxDeltas(tx, deltas) {
 }
 
 // ============ الاستعلام عن الحركات ========== //
-export async function queryExchangesService(
-  filters = {},
-  pagination = {}
-) {
- 
-  const {
-    page = 1,
-    pageSize = 10,
-  } = pagination;
+export async function queryExchangesService(filters = {}, pagination = {}) {
+  const { page = 1, pageSize = 10 } = pagination;
 
   // التحقق من رقم الصفحة
   if (!Number.isSafeInteger(page) || page < 1) {
@@ -325,7 +318,6 @@ export async function queryExchangesService(
     throw new RangeError("Pagination offset is invalid.");
   }
 
-
   // ====================================
   //  تجهيز فلاتر التاريخ
   // ====================================
@@ -335,7 +327,6 @@ export async function queryExchangesService(
     dateTo: filters.dateTo || undefined,
   });
 
-
   // ====================================
   //  تطبيع بقية الفلاتر
   // ====================================
@@ -344,23 +335,17 @@ export async function queryExchangesService(
     ...dateRange,
 
     fromCurrency:
-      typeof filters.fromCurrency === "string" &&
-      filters.fromCurrency.trim()
+      typeof filters.fromCurrency === "string" && filters.fromCurrency.trim()
         ? filters.fromCurrency.trim().toUpperCase()
         : undefined,
 
     toCurrency:
-      typeof filters.toCurrency === "string" &&
-      filters.toCurrency.trim()
+      typeof filters.toCurrency === "string" && filters.toCurrency.trim()
         ? filters.toCurrency.trim().toUpperCase()
         : undefined,
 
-    note:
-      typeof filters.note === "string"
-        ? filters.note.trim()
-        : "",
+    note: typeof filters.note === "string" ? filters.note.trim() : "",
   };
-
 
   // ====================================
   //  إعداد Pagination للـ Repository
@@ -371,20 +356,16 @@ export async function queryExchangesService(
     limit: pageSize,
   };
 
-
   // ====================================
   //  تنفيذ الاستعلام
   // ====================================
 
-  return runInTransaction(
-    [EXCHANGES_STORE],
-    "readonly",
-    (tx) =>
-      exchangeRpository.queryExchanges(
-        tx,
-        repositoryFilters,
-        repositoryPagination
-      )
+  return runInTransaction([EXCHANGES_STORE], "readonly", (tx) =>
+    exchangeRpository.queryExchanges(
+      tx,
+      repositoryFilters,
+      repositoryPagination
+    )
   );
 }
 
@@ -403,15 +384,12 @@ export async function getExchangeByIdService(id) {
 
 // ============ إضافة حركة صرف ============ //
 export async function createExchangeService(formData) {
-  // أولًا: تجهيز البيانات والتحقق منها قبل فتح المعاملة.
   const preparedExchange = prepareExchangeInput(formData);
 
-  return runInTransaction(
+  const result = runInTransaction(
     [EXCHANGES_STORE, CASHBOXES_STORE],
     "readwrite",
     async (tx) => {
-      // نسمح بإضافة حركة جديدة فقط إذا كان
-      // الصندوقان موجودين ونشطين.
       await assertCashboxesExistAndActive(tx, [
         preparedExchange.fromCurrency,
         preparedExchange.toCurrency,
@@ -445,6 +423,10 @@ export async function createExchangeService(formData) {
       return createdExchange;
     }
   );
+
+  markBackupDirty("created-exchange");
+
+  return result;
 }
 
 // ========= تعديل حركة صرف ========= //

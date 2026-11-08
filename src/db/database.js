@@ -1,7 +1,7 @@
 import { runMigration } from "./migration";
 
-const DATABASE_NAME = "ExchangeDB";
-const CURRENT_VERSION = 3;
+export const DATABASE_NAME = "ExchangeDB";
+export const CURRENT_VERSION = 3;
 
 function openDatabase() {
   return new Promise((resolve, reject) => {

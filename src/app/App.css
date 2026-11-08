@@ -4,3 +4,8 @@ body, html {
     background-color: black;
     direction: rtl;
 }
+.btnhover:hover {
+    color: black !important;
+    background: rgba(250, 229, 110, 0.992);
+    transition: all 0.3s ease;
+}
