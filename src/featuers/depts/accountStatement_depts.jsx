@@ -25,6 +25,8 @@ import {
   MdEdit,
   MdFormatListBulleted,
 } from "react-icons/md";
+import { useState } from "react";
+import AddDeptAction from "../depts/addDeptAction_depts";
 
 export default function ExchangeHistory() {
   const primary = "rgba(250,229,110,0.992)";
@@ -118,6 +120,9 @@ export default function ExchangeHistory() {
     { id: "note", label: "الملاحظة" },
     { id: "actions", label: "الإجراءات" },
   ];
+
+  const [openAddDept, setOpenAddDept] = useState(false);
+
   return (
     <Paper
       sx={{
@@ -171,6 +176,7 @@ export default function ExchangeHistory() {
           </Box>
           <Button
             variant="contained"
+            onClick={() => setOpenAddDept(true)}
             sx={{
               color: text,
               display: "flex",
@@ -512,6 +518,7 @@ export default function ExchangeHistory() {
           </TableBody>
         </Table>
       </TableContainer>
+      <AddDeptAction open={openAddDept} onClose={() => setOpenAddDept(false)} />
     </Paper>
   );
 }
