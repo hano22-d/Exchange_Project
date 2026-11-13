@@ -1,13 +1,12 @@
-/**
- * Shared signing serialization used by both:
- * - the local Node.js license issuer
- * - the React app when it verifies a license
- *
- * Keep this module dependency-free and do not change the signing context
- * without intentionally migrating the license format.
- */
+/*
+وتطبيق رياكت ايضا  node هذا الملف يستخدم في أداة
+(التوقيع في فيnode, التحقق في رياكت) لانه يجعل شكل كائن الترخيص موحدا عند الاثنين
+*/
+
+//ثابت سياق التوقيع واصداره
 export const LICENSE_SIGNING_CONTEXT = "exchange-office-license:v1";
 
+// دالة ترتيب مفاتيح بيانات الترخيص
 function sortJsonKeys(value) {
   if (Array.isArray(value)) {
     return value.map(sortJsonKeys);
@@ -44,10 +43,7 @@ function sortJsonKeys(value) {
   throw new TypeError("License payload contains a non-JSON value.");
 }
 
-/**
- * Produces the exact UTF-8 text that must be signed and later verified.
- * Sorting object keys prevents property-order differences from changing bytes.
- */
+//دالة تجهيز نص بيانات الترخيص مع ثابت الترخيص بعد عملية الترتيب
 export function serializeLicensePayloadForSigning(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw new TypeError("License payload must be a plain object.");

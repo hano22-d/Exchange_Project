@@ -17,7 +17,5 @@ export function LicenseGate({ children }) {
     return children;
   }
 
-  // No license, invalid license, or an initialization/storage error:
-  // keep the protected application unmounted and show activation UI.
   return <ActivationPage />;
 }

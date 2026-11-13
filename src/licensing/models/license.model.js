@@ -11,6 +11,7 @@ const UUID_V4_PATTERN =
 const BASE64_PATTERN =
   /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)$/;
 
+// التحقق من صلاحية النصوص
 function isNonEmptyString(value, maxLength = 200) {
   return (
     typeof value === "string" &&
@@ -19,6 +20,7 @@ function isNonEmptyString(value, maxLength = 200) {
   );
 }
 
+//التحقق من تاريخ اصدار الترخيص
 function isCanonicalIsoDate(value) {
   if (typeof value !== "string") {
     return false;
@@ -31,6 +33,7 @@ function isCanonicalIsoDate(value) {
   );
 }
 
+// من الترخيص المستلم والتحقق منه بنيويا payload تكوين بيانات الترخيص
 export function createLicensePayload({
   licenseId,
   customerName,
@@ -58,6 +61,7 @@ export function createLicensePayload({
   return payload;
 }
 
+// دالة التحقق من بنية كائن بيانات الترخيص
 export function validateLicensePayload(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return { valid: false, reason: "License payload must be an object." };
@@ -104,6 +108,7 @@ export function validateLicensePayload(payload) {
   return { valid: true, reason: null };
 }
 
+// (payload + signature) دالة التحقق من كائن الترخيص النهائي
 export function validateSignedLicense(license) {
   if (!license || typeof license !== "object" || Array.isArray(license)) {
     return { valid: false, reason: "Signed license must be an object." };

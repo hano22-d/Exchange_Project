@@ -1,7 +1,5 @@
 import { randomBytes } from "node:crypto";
 
-// Keep this contract aligned with:
-// src/features/licensing/models/license.model.js
 const INSTALLATION_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 

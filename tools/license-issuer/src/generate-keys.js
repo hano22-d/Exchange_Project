@@ -11,7 +11,6 @@ import {
 async function ensureFilesDoNotExist(paths) {
   for (const filePath of paths) {
     try {
-      // wx below is the final protection against accidental overwrite.
       await access(filePath);
       throw new Error(
         `A key file already exists: ${filePath}\n` +
@@ -60,8 +59,6 @@ async function main() {
     },
   });
 
-  // Web Crypto imports Ed25519 public keys in raw format (32 bytes).
-  // Node exports SPKI DER, whose final 32 bytes are the raw Ed25519 key.
   const publicKeyDer = createPublicKey(publicKey).export({
     type: "spki",
     format: "der",

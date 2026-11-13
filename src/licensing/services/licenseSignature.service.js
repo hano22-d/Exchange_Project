@@ -4,12 +4,9 @@ import { serializeLicensePayloadForSigning } from "../utils/licenseSigning.mjs";
 const ED25519_PUBLIC_KEY_LENGTH = 32;
 const ED25519_SIGNATURE_LENGTH = 64;
 
-// Cache the imported CryptoKey so we do not import it on every verification.
 let importedPublicKeyPromise = null;
 
-/**
- * Returns the browser's SubtleCrypto API.
- */
+// web crypto Api دالة جلب بيئة
 function getSubtleCrypto() {
   const subtle = globalThis.crypto?.subtle;
 
@@ -22,9 +19,7 @@ function getSubtleCrypto() {
   return subtle;
 }
 
-/**
- * Decodes a Base64 string into Uint8Array bytes.
- */
+// unit8Array إلى بايتات ثنائية بصيغة Base64 دالة تحويل نص
 function decodeBase64ToBytes(value, fieldName) {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new Error(`${fieldName} must be a non-empty Base64 string.`);
@@ -49,10 +44,7 @@ function decodeBase64ToBytes(value, fieldName) {
   return Uint8Array.from(binaryString, (character) => character.charCodeAt(0));
 }
 
-/**
- * Imports the raw Ed25519 public key into Web Crypto.
- * The imported key is cached for later verification calls.
- */
+// دالة جلب المفتاح العام بعد تحويله ل بايتات ثنائية
 async function getLicensePublicKey() {
   if (!importedPublicKeyPromise) {
     importedPublicKeyPromise = (async () => {
@@ -86,24 +78,7 @@ async function getLicensePublicKey() {
   return importedPublicKeyPromise;
 }
 
-/**
- * Verifies the digital signature of a signed license.
- *
- * Expected input:
- * {
- *   payload: {...},
- *   signature: "BASE64_SIGNATURE"
- * }
- *
- * Returns:
- * {
- *   valid: boolean,
- *   reason: string | null
- * }
- *
- * This function verifies the cryptographic signature only.
- * Structural validation and Installation ID matching are handled elsewhere.
- */
+// دالة تطبيق التحقق التشفيري من التوقيع الرقمي
 export async function verifyLicenseSignature(license) {
   if (
     !license ||

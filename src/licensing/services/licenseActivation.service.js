@@ -3,10 +3,7 @@ import { validateLicense } from "./licenseValidation.service.js";
 
 const MAX_LICENSE_FILE_SIZE = 64 * 1024;
 
-/**
- * Reads a selected .license.json file, validates it for this installation,
- * and stores it only after all checks succeed.
- */
+// دالة ادارة تفعيل الترخيص مثل التحقق منه ثم حفظه
 export async function activateLicenseFile(file, installationId) {
   if (!file || typeof file.text !== "function") {
     return {
@@ -57,8 +54,6 @@ export async function activateLicenseFile(file, installationId) {
   }
 
   try {
-    // saveLicense performs structural validation again. Signature verification
-    // has already succeeded above, so invalid files never overwrite a saved license.
     saveLicense(license);
   } catch (error) {
     return {

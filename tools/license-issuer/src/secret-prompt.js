@@ -1,10 +1,6 @@
 import readline from "node:readline";
 import { stdin, stdout } from "node:process";
 
-/**
- * Reads a passphrase without echoing its characters to the terminal.
- * EXCHANGE_LICENSE_KEY_PASSPHRASE can be supplied for controlled automation/tests.
- */
 export async function promptSecret(label) {
   const fromEnvironment = process.env.EXCHANGE_LICENSE_KEY_PASSPHRASE;
 

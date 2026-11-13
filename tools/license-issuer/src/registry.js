@@ -36,10 +36,6 @@ export async function hasLicenseId(licenseId) {
   return records.some((record) => record.licenseId === licenseId);
 }
 
-/**
- * Local bookkeeping only. This is NOT a central activation database and
- * cannot prevent a copied/modified registry from being changed.
- */
 export async function appendIssuedLicenseRecord(record) {
   await mkdir(REGISTRY_DIR, { recursive: true });
 

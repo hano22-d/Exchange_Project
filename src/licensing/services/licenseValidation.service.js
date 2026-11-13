@@ -5,15 +5,10 @@ import {
 } from "./installationId.service.js";
 import { verifyLicenseSignature } from "./licenseSignature.service.js";
 
-/**
- * Performs complete local license validation:
- * 1. Structure validation.
- * 2. Current Installation ID validation.
- * 3. Ed25519 signature verification.
- * 4. Installation ID matching.
- */
+
+//دالة التحقق الشامل من الترخيص (التحقق البنيوي والتشفيري ومطابقة المعرف الموجود في الترخيص مع معرف الترخيص)
 export async function validateLicense(license, currentInstallationId) {
-  // Step 1: Validate the license structure.
+  // 1 التحقق من صحة بنية بيانات الترخيص (Structure)
   const structureResult = validateSignedLicense(license);
 
   if (!structureResult.valid) {
@@ -24,7 +19,7 @@ export async function validateLicense(license, currentInstallationId) {
     };
   }
 
-  // Step 2: Obtain the current installation ID.
+  // 2 التحقق من صحة معرّف التثبيت الحالي (Current Installation ID)
   let installationId = currentInstallationId;
 
   try {
@@ -47,7 +42,7 @@ export async function validateLicense(license, currentInstallationId) {
     };
   }
 
-  // Step 3: Verify the digital signature.
+  // 3 التحقق من صحة التوقيع الرقمي باستخدام خوارزمية Ed25519
   let signatureResult;
 
   try {
@@ -71,7 +66,7 @@ export async function validateLicense(license, currentInstallationId) {
     };
   }
 
-  // Step 4: Match the signed license to this installation.
+  // 4 مطابقة معرف التثبيت القادم مع الترخيص بالمعرف الحالي للتطبيق
   if (
     license.payload.installationId.toLowerCase() !==
     installationId.toLowerCase()

@@ -112,7 +112,6 @@ export function ActivationPage() {
       dir="rtl"
       sx={{
         minHeight: "100vh",
-        width: "100%",
         position: "relative",
         overflow: "hidden",
         display: "flex",
@@ -247,8 +246,8 @@ export function ActivationPage() {
           <Box
             aria-hidden="true"
             sx={{
-              width: 72,
-              height: 72,
+              width: 400,
+              p: 1,
               mx: "auto",
               mb: 2,
               borderRadius: "20px",
@@ -263,7 +262,8 @@ export function ActivationPage() {
           >
             <Typography
               sx={{
-                fontSize: "1.65rem",
+                fontFamily: "'Alyamama', sans-serif",
+                fontSize: "1.50rem",
                 fontWeight: 900,
                 letterSpacing: "1px",
                 background: "linear-gradient(135deg, #f3d796 0%, #D6B56D 100%)",
@@ -271,7 +271,7 @@ export function ActivationPage() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              SH
+              تفعيل نظام الصرافة والحوالات
             </Typography>
             <Box
               sx={{
@@ -295,22 +295,9 @@ export function ActivationPage() {
           </Box>
 
           <Typography
-            id="license-title"
-            variant="h5"
-            component="h1"
-            sx={{
-              fontWeight: 800,
-              color: "#f8fafc",
-              mb: 1,
-              letterSpacing: "-0.3px",
-            }}
-          >
-            تفعيل نظام الصرافة والحوالات
-          </Typography>
-
-          <Typography
             variant="body2"
             sx={{
+              fontFamily: "'Alyamama', sans-serif",
               color: "#94a3b8",
               lineHeight: 1.7,
               mb: 3,
@@ -337,6 +324,7 @@ export function ActivationPage() {
                 variant="caption"
                 sx={{
                   color: "#cbd5e1",
+                  fontFamily: "'Alyamama', sans-serif",
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
@@ -382,7 +370,7 @@ export function ActivationPage() {
                   bgcolor: "transparent",
                   color: installationId ? "#00d9ff" : "#64748b",
                   fontFamily: "monospace",
-                  fontSize: "0.9rem",
+                  fontSize: "1rem",
                   fontWeight: 600,
                   letterSpacing: "0.5px",
                   cursor: "text",
@@ -410,6 +398,7 @@ export function ActivationPage() {
                       borderRadius: 2,
                       px: 1.5,
                       py: 0.7,
+                      fontFamily: "'Alyamama', sans-serif",
                       fontSize: "0.8rem",
                       fontWeight: 700,
                       color: isCopied ? "#34d399" : "#D6B56D",
@@ -447,6 +436,7 @@ export function ActivationPage() {
                     mt: 0.8,
                     color: isCopied ? "#34d399" : "#fbbf24",
                     fontWeight: 600,
+                    fontFamily: "'Alyamama', sans-serif",
                   }}
                 >
                   {copyMessage}
@@ -472,6 +462,7 @@ export function ActivationPage() {
                 alignItems: "center",
                 gap: 0.6,
                 mb: 0.8,
+                fontFamily: "'Alyamama', sans-serif",
                 fontSize: "0.85rem",
               }}
             >
@@ -479,7 +470,6 @@ export function ActivationPage() {
               ملف الترخيص
             </Typography>
 
-            {/* حقل اختيار الملف بتصميم تفاعلي مع الحفاظ على input الأصلي */}
             <Box
               onClick={() => {
                 if (!isActivating) fileInputRef.current?.click();
@@ -549,6 +539,7 @@ export function ActivationPage() {
                   sx={{
                     color: "#f8fafc",
                     fontWeight: 700,
+                    fontFamily: "'Alyamama', sans-serif",
                     wordBreak: "break-all",
                   }}
                 >
@@ -558,13 +549,21 @@ export function ActivationPage() {
                 <>
                   <Typography
                     variant="body2"
-                    sx={{ color: "#e2e8f0", fontWeight: 600 }}
+                    sx={{
+                      color: "#e2e8f0",
+                      fontWeight: 600,
+                      fontFamily: "'Alyamama', sans-serif",
+                    }}
                   >
                     اضغط لاختيار ملف الترخيص من جهازك
                   </Typography>
                   <Typography
                     variant="caption"
-                    sx={{ color: "#64748b", mt: 0.3 }}
+                    sx={{
+                      color: "#64748b",
+                      mt: 0.3,
+                      fontFamily: "'Alyamama', sans-serif",
+                    }}
                   >
                     الصيغ المدعومة: (.license.json أو .json)
                   </Typography>
@@ -579,6 +578,7 @@ export function ActivationPage() {
                   severity="error"
                   role="alert"
                   sx={{
+                    fontFamily: "'Alyamama', sans-serif",
                     mb: 2.5,
                     borderRadius: 2.5,
                     bgcolor: "rgba(239, 68, 68, 0.12)",
@@ -612,6 +612,7 @@ export function ActivationPage() {
               sx={{
                 py: 1.4,
                 borderRadius: 2.5,
+                fontFamily: "'Alyamama', sans-serif",
                 fontWeight: 800,
                 fontSize: "0.98rem",
                 color: "#0b0f17",
@@ -653,6 +654,7 @@ export function ActivationPage() {
               display: "block",
               color: "#64748b",
               lineHeight: 1.6,
+              fontFamily: "'Alyamama', sans-serif",
             }}
           >
             الترخيص مرتبط بمعرّف هذا التثبيت. احتفظ بملف الترخيص في مكان آمن.

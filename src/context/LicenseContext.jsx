@@ -27,6 +27,7 @@ export function LicenseProvider({ children }) {
   const [installationId, setInstallationId] = useState(null);
   const [error, setError] = useState(null);
 
+  // دالة التحقق من الترخيص المحفوظ في حال كان محفوظا من قبل
   const checkStoredLicense = useCallback(async () => {
     setStatus("checking");
     setError(null);
@@ -47,8 +48,6 @@ export function LicenseProvider({ children }) {
       const result = await validateLicense(storedLicense, currentId);
 
       if (!result.valid) {
-        // Keep the stored file for diagnosis. A valid replacement may overwrite
-        // it only after that replacement passes all validation steps.
         setLicense(null);
         setError(result);
         setStatus("invalid");
@@ -75,13 +74,12 @@ export function LicenseProvider({ children }) {
     }
   }, []);
 
+  // تشغيل دالة التحقق من الترخيص مع بدء عمل التطبيق
   useEffect(() => {
-    // In React StrictMode this check may run twice during development.
-    // It is safe: reading the same installation ID/license is idempotent,
-    // and the imported public CryptoKey is cached by the signature service.
     void checkStoredLicense();
   }, [checkStoredLicense]);
 
+  // دالة تفعيل ترخيص لاول مرة
   const activateLicenseFile = useCallback(
     async (file) => {
       setStatus("activating");
