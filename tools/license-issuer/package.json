@@ -1,0 +1,14 @@
+{
+  "name": "exchange-license-issuer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Offline local tool for issuing signed Exchange Office licenses.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "keys:generate": "node src/generate-keys.js",
+    "license:issue": "node src/issue-license.js"
+  }
+}

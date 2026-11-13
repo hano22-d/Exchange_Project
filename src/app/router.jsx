@@ -8,8 +8,6 @@ import MainLayout from "./mainLayout";
 import Exchange from "../featuers/operations/exchange_operations";
 import Transfer from "../featuers/operations/transfer_operations";
 import Dept from "../featuers/operations/dept_operations";
-import ExchangeDetails from "../featuers/archive/exchange_details_archive";
-import TransferDetails from "../featuers/archive/transfers_details_archive";
 import ArchiveDetailsSwitcher from "../featuers/archive/archiveDetailsSwicher";
 
 export const router = createBrowserRouter([

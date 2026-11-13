@@ -9,6 +9,7 @@ import {
   updateParty,
   deleteParty,
 } from "../repositories/partyRepository.js";
+import { markBackupDirty } from "./backupSchedulerService.js";
 
 const PARTIES_STORE = "parties";
 const DEBTS_STORE = "debts";
@@ -67,7 +68,7 @@ export function searchPartiesByNameService(name) {
 
 // إضافة جهة
 export function addPartyService(formData) {
-  return runInTransaction([PARTIES_STORE], "readwrite", async (tx) => {
+  const result = runInTransaction([PARTIES_STORE], "readwrite", async (tx) => {
     const party = normalizePartyData(formData);
 
     validatePartyData(party);
@@ -79,11 +80,15 @@ export function addPartyService(formData) {
       ...party,
     };
   });
+
+  markBackupDirty("created-party");
+
+  return result;
 }
 
 // تعديل جهة
 export function updatePartyService(id, formData) {
-  return runInTransaction([PARTIES_STORE], "readwrite", async (tx) => {
+  const result = runInTransaction([PARTIES_STORE], "readwrite", async (tx) => {
     const partyId = normalizeId(id);
 
     const currentParty = await getPartyById(partyId, tx);
@@ -103,11 +108,15 @@ export function updatePartyService(id, formData) {
 
     return updatedParty;
   });
+
+  markBackupDirty("updated-party");
+
+  return result;
 }
 
 // حذف جهة
 export function deletePartyService(id) {
-  return runInTransaction(
+  const result = runInTransaction(
     [PARTIES_STORE, DEBTS_STORE],
     "readwrite",
     async (tx) => {
@@ -130,6 +139,10 @@ export function deletePartyService(id) {
       return party;
     }
   );
+
+  markBackupDirty("deleted-party");
+
+  return result;
 }
 const partyService = {
   getAllPartiesService,

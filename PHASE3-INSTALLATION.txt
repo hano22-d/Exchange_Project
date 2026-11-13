@@ -1,0 +1,19 @@
+PHASE 3 — INSTALLATION NOTES
+
+1) Copy the tools/license-issuer folder into the ROOT of your existing Vite project.
+2) Copy src/features/licensing/utils/licenseSigning.mjs into the same path in the Vite project.
+3) Open a terminal inside tools/license-issuer.
+4) Check Node: node --version
+5) Generate keys once: npm run keys:generate (choose a strong passphrase and keep it safe).
+6) Issue a test license: npm run license:issue (enter the same passphrase).
+
+No npm install is required. The scripts use only built-in Node.js modules.
+
+The encrypted private/public key files, issued license files, and local registry are written outside
+this project, by default under your operating-system user home folder:
+  Windows: C:\Users\<your-user>\ExchangeLicenseIssuer\
+  macOS:   /Users/<your-user>/ExchangeLicenseIssuer/
+  Linux:   /home/<your-user>/ExchangeLicenseIssuer/
+
+Do not upload your private key. The public key will be copied into the React source during
+the browser verification phase.

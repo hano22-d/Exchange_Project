@@ -265,7 +265,10 @@ export function BackupProvider({ children }) {
       return runAction("end-of-day", async () => {
         const tokenPromise = requestTokenFromUserAction();
 
-        const token = await tokenPromise;
+        const request = await tokenPromise;
+
+        const token =
+          typeof request === "object" ? request.access_token : request;
 
         setConnected(true);
 

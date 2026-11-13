@@ -390,7 +390,7 @@ function getBusinessDateRange(businessDate) {
 export async function createDailyBackupBlobService(businessDate) {
   validateBusinessDate(businessDate);
 
-  const { backup: fullBackup } = await createFullBackupService();
+  const fullBackup = await createFullBackupService();
 
   const { from, toExclusive } = getBusinessDateRange(businessDate);
 
@@ -438,20 +438,35 @@ export async function createDailyBackupBlobService(businessDate) {
 // Upload Or Update Daily Archive
 // ======================================================
 export async function uploadDailyBackupService(businessDate, accessToken) {
+  console.log("DAILY 1: Starting", businessDate);
+
   const token = requireAccessToken(accessToken);
 
-  validateBusinessDate(businessDate);
-
   const backupFolder = await getOrCreateBackupFolderService(token);
+
+  console.log("DAILY 2: Backup folder", backupFolder);
 
   const dailyFolder = await getOrCreateDailyArchivesFolderService(
     token,
     backupFolder.id
   );
 
+  console.log("DAILY 3: Daily folder", dailyFolder);
+
   const { backup, blob } = await createDailyBackupBlobService(businessDate);
 
+  console.log("DAILY 4: Blob created", {
+    size: blob.size,
+    type: blob.type,
+    recordCounts: backup.meta.recordCounts,
+  });
+
   const fileName = `${DAILY_BACKUP_PREFIX}${businessDate}.json`;
+
+  console.log("DAILY 5: Uploading file", {
+    fileName,
+    parentId: dailyFolder.id,
+  });
 
   const result = await uploadOrUpdateDriveFileService({
     name: fileName,
@@ -460,6 +475,8 @@ export async function uploadDailyBackupService(businessDate, accessToken) {
     accessToken: token,
     mimeType: JSON_MIME_TYPE,
   });
+
+  console.log("DAILY 6: Upload completed", result);
 
   return {
     backupId: backup.meta.backupId,

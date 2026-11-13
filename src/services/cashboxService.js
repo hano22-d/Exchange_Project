@@ -1,6 +1,7 @@
 import openDatabase from "../db/database";
 import { waitForTransactionCompletion } from "../db/transaction";
 import cashboxRepository from "../repositories/cashboxrepository";
+import { markBackupDirty } from "./backupSchedulerService";
 
 /* ======================================= 
    دوال تصفية والتحقق من مدخلات الواجهة
@@ -19,7 +20,7 @@ function normalizedCashboxForm(dataForm) {
     opiningBalance: Number(dataForm.balance),
     date: Date.now(),
     updatedAt: Date.now(),
-    active: true
+    active: true,
   };
 
   return fullData;
@@ -80,7 +81,9 @@ async function addCashboxService(newCashbox) {
 
   await waitForTransactionCompletion(transaction);
 
-  return normalizedCashbox
+  markBackupDirty("created-cashbox");
+
+  return normalizedCashbox;
 }
 
 // ============ دالة تعطيل / تفعيل صندوق ========== //
@@ -89,12 +92,14 @@ async function setCashboxActiveService(currency, active) {
   const transaction = db.transaction(["cashboxes"], "readwrite");
 
   if (typeof active !== "boolean") {
-  throw new Error("قيمة التفعيل غير صالحة");
-}
+    throw new Error("قيمة التفعيل غير صالحة");
+  }
 
   await cashboxRepository.setCashboxActive(transaction, currency, active);
 
   await waitForTransactionCompletion(transaction);
+
+  markBackupDirty("Disable-cashbox");
 }
 
 const cashboxService = {

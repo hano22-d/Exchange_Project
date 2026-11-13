@@ -3,6 +3,7 @@ import { runInTransaction } from "../db/transaction.js";
 import debtRepository from "../repositories/debtRepository.js";
 import cashboxRepository from "../repositories/cashboxrepository.js";
 import { getTimestampFromDateTimeLocal } from "../shared/utilsDate.js";
+import { markBackupDirty } from "./backupSchedulerService.js";
 
 const PARTIES_STORE = "parties";
 const DEBTS_STORE = "debts";
@@ -197,7 +198,7 @@ export function queryDebtsService(filters = {}) {
 
 // إضافة حركة دين
 export function addDebtService(formData) {
-  return runInTransaction(
+  const result = runInTransaction(
     [PARTIES_STORE, DEBTS_STORE, CASHBOXES_STORE],
     "readwrite",
     async (tx) => {
@@ -229,11 +230,15 @@ export function addDebtService(formData) {
       };
     }
   );
+
+  markBackupDirty("created-debt");
+
+  return result;
 }
 
 // تعديل حركة دين
 export function updateDebtService(id, formData) {
-  return runInTransaction(
+  const result = runInTransaction(
     [PARTIES_STORE, DEBTS_STORE, CASHBOXES_STORE],
     "readwrite",
     async (tx) => {
@@ -294,11 +299,15 @@ export function updateDebtService(id, formData) {
       return updatedDebt;
     }
   );
+
+  markBackupDirty("updated-debt");
+
+  return result;
 }
 
 // حذف حركة دين
 export function deleteDebtService(id) {
-  return runInTransaction(
+  const result = runInTransaction(
     [DEBTS_STORE, CASHBOXES_STORE],
     "readwrite",
     async (tx) => {
@@ -325,6 +334,10 @@ export function deleteDebtService(id) {
       return currentDebt;
     }
   );
+
+  markBackupDirty("deleted-debt");
+
+  return result;
 }
 
 const debtService = {

@@ -27,7 +27,7 @@ function generateBackupId() {
 }
 
 // استخراج تاريخ العمل حسب توقيت دمشق
-function getBusinessDate(date = new Date()) {
+export function getBusinessDate(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: SYRIA_TIME_ZONE,
     year: "numeric",

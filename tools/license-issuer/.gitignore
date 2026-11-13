@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+*.private.pem
+private.pem
+keys/
+output/
+licenses/
+registry/

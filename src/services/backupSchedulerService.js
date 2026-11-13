@@ -2,7 +2,7 @@ import googleAuthService from "../integrations/googleDriveOAuth";
 import { uploadCurrentBackupService } from "./backupOrchestratorService";
 
 // ======================================================
-// Configuration
+// الثوابت
 // ======================================================
 
 const DEBOUNCE_DELAY = 60 * 1000;
@@ -11,8 +11,107 @@ const MAX_WAIT_DELAY = 5 * 60 * 1000;
 
 const RETRY_DELAY = 30 * 1000;
 
+const DIRTY_STATE_STORAGE_KEY = "exchange-office-backup-dirty-state";
+
+const DIRTY_STATE_VERSION = 1;
+
 // ======================================================
-// Internal State
+// قراءة قيمة isDirty من localStorage
+// ======================================================
+
+function readPersistedDirtyState() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const savedValue = window.localStorage.getItem(DIRTY_STATE_STORAGE_KEY);
+
+    if (!savedValue) return null;
+
+    const savedState = JSON.parse(savedValue);
+
+    if (
+      !savedState ||
+      savedState.version !== DIRTY_STATE_VERSION ||
+      savedState.isDirty !== true
+    ) {
+      return null;
+    }
+
+    const savedFirstDirtyAt =
+      Number.isFinite(savedState.firstDirtyAt) && savedState.firstDirtyAt > 0
+        ? savedState.firstDirtyAt
+        : Date.now();
+
+    return {
+      firstDirtyAt: savedFirstDirtyAt,
+
+      lastChangeReason:
+        typeof savedState.lastChangeReason === "string"
+          ? savedState.lastChangeReason
+          : null,
+    };
+  } catch (error) {
+    console.warn("Could not read persisted backup dirty state:", error);
+
+    return null;
+  }
+}
+
+const persistedDirtyState = readPersistedDirtyState();
+
+// ======================================================
+//  دالة إضافة حالة isDirty الى localStorage
+// ======================================================
+function persistDirtyState() {
+  if (typeof window === "undefined") return false;
+
+  try {
+    if (firstDirtyAt === null) {
+      firstDirtyAt = Date.now();
+    }
+
+    const stateToSave = {
+      version: DIRTY_STATE_VERSION,
+
+      isDirty: true,
+
+      firstDirtyAt,
+
+      lastChangeReason: schedulerState.lastChangeReason,
+    };
+
+    window.localStorage.setItem(
+      DIRTY_STATE_STORAGE_KEY,
+      JSON.stringify(stateToSave)
+    );
+
+    return true;
+  } catch (error) {
+    console.warn("Could not persist backup dirty state:", error);
+
+    return false;
+  }
+}
+
+// ======================================================
+// دالة حذف حالة isDirty من localStorage
+// ======================================================
+function clearPersistedDirtyState() {
+  if (typeof window === "undefined") return false;
+
+  try {
+    window.localStorage.removeItem(DIRTY_STATE_STORAGE_KEY);
+
+    return true;
+  } catch (error) {
+    console.warn("Could not clear persisted backup dirty state:", error);
+
+    return false;
+  }
+}
+
+// ======================================================
+// المتغيرات العالمية الاساسية وحالة sheduler
 // ======================================================
 
 let schedulerStarted = false;
@@ -21,7 +120,7 @@ let debounceTimer = null;
 let maxWaitTimer = null;
 let retryTimer = null;
 
-let firstDirtyAt = null;
+let firstDirtyAt = persistedDirtyState?.firstDirtyAt ?? null;
 
 let uploadPromise = null;
 
@@ -30,17 +129,23 @@ let rerunRequested = false;
 const listeners = new Set();
 
 const schedulerState = {
-  status: "idle",
-  isDirty: false,
+  status: persistedDirtyState ? "auth-required" : "idle",
+
+  isDirty: Boolean(persistedDirtyState),
+
   isUploading: false,
+
   revision: 0,
+
   lastBackupAt: null,
+
   lastError: null,
-  lastChangeReason: null,
+
+  lastChangeReason: persistedDirtyState?.lastChangeReason ?? null,
 };
 
 // ======================================================
-// State Helpers
+// الدوال المساعدة
 // ======================================================
 
 function publishStatus() {
@@ -84,9 +189,8 @@ function clearScheduledTimers() {
 }
 
 // ======================================================
-// Schedule Automatic Upload
+// دالة تنفيذ الرفع المجدول (التلقائي)
 // ======================================================
-
 function scheduleAutomaticBackup() {
   if (!schedulerStarted) return;
 
@@ -110,7 +214,6 @@ function scheduleAutomaticBackup() {
     executeAutomaticBackup("debounce").catch(() => {});
   }, DEBOUNCE_DELAY);
 
-
   if (maxWaitTimer === null) {
     const elapsed = firstDirtyAt ? Date.now() - firstDirtyAt : 0;
 
@@ -125,9 +228,8 @@ function scheduleAutomaticBackup() {
 }
 
 // ======================================================
-// Mark Local Database As Dirty
+// بحدوث تغييرات في قاعدة البيانات sheduler دالة إبلاغ
 // ======================================================
-
 export function markBackupDirty(reason = "database-change") {
   schedulerState.revision += 1;
 
@@ -141,6 +243,8 @@ export function markBackupDirty(reason = "database-change") {
     firstDirtyAt = Date.now();
   }
 
+  persistDirtyState();
+
   publishStatus();
 
   scheduleAutomaticBackup();
@@ -148,10 +252,9 @@ export function markBackupDirty(reason = "database-change") {
   return schedulerState.revision;
 }
 
-// ======================================================
-// Execute Upload
-// ======================================================
-
+// ===============================================================
+// دالة تطبيق النسخ يستخدم للنسخ المجدول والفوري على حد سواء
+// ===============================================================
 async function executeBackup({
   force = false,
   accessToken = null,
@@ -200,6 +303,8 @@ async function executeBackup({
     schedulerState.isDirty = true;
 
     firstDirtyAt = Date.now();
+
+    persistDirtyState();
   }
 
   clearScheduledTimers();
@@ -225,9 +330,13 @@ async function executeBackup({
 
         firstDirtyAt = null;
 
+        clearPersistedDirtyState();
+
         schedulerState.status = "success";
       } else {
         schedulerState.isDirty = true;
+
+        persistDirtyState();
 
         schedulerState.status = "dirty";
       }
@@ -252,6 +361,10 @@ async function executeBackup({
         schedulerState.status = "offline";
       } else {
         schedulerState.status = "error";
+      }
+
+      if (schedulerState.isDirty) {
+        persistDirtyState();
       }
 
       publishStatus();
@@ -302,9 +415,8 @@ async function executeBackup({
 }
 
 // ======================================================
-// Automatic Backup Entry
+// دالة تطبيق النسخ التلقائي
 // ======================================================
-
 function executeAutomaticBackup(reason) {
   return executeBackup({
     force: false,
@@ -314,9 +426,8 @@ function executeAutomaticBackup(reason) {
 }
 
 // ======================================================
-// Manual Backup
+// دالة تطبيق النسخ اليدوي
 // ======================================================
-
 export async function flushBackupNow() {
   const token = googleAuthService.getValidAccessToken();
 
@@ -338,10 +449,9 @@ export async function flushBackupNow() {
   });
 }
 
-// ======================================================
-// Browser Events
-// ======================================================
-
+// ===================================================================
+// دوال تطبيق النسخ المجدول عند احداث عودة الشبكة و ظهور التطبيق
+// ===================================================================
 function handleOnline() {
   if (!schedulerState.isDirty) return;
 
@@ -363,9 +473,8 @@ function handleVisibilityChange() {
 }
 
 // ======================================================
-// Start Scheduler
+// shedulerدالة بدء ال
 // ======================================================
-
 function startInternalScheduler() {
   if (schedulerStarted) return;
 
@@ -380,6 +489,9 @@ function startInternalScheduler() {
   }
 }
 
+// ======================================================
+// shedulerدالة إيقاف ال
+// ======================================================
 function stopInternalScheduler() {
   if (!schedulerStarted) return;
 
@@ -392,6 +504,9 @@ function stopInternalScheduler() {
   document.removeEventListener("visibilitychange", handleVisibilityChange);
 }
 
+// ======================================================
+// shedulerدالة تشغيل ال
+// ======================================================
 export function startBackupScheduler({ onStatusChange } = {}) {
   if (onStatusChange) {
     listeners.add(onStatusChange);

@@ -402,7 +402,7 @@ export async function updateTransferService(id, data) {
 
   validateTransfer(normalizedTransfer);
 
-  return runInTransaction(
+  const result = runInTransaction(
     [TRANSFER_STORE_NAME, CASHBOX_STORE_NAME],
     "readwrite",
     async (tx) => {
@@ -444,13 +444,17 @@ export async function updateTransferService(id, data) {
       return updatedTransfer;
     }
   );
+
+  markBackupDirty("updated-reansfer");
+
+  return result;
 }
 
 // ===================================
 //    حذف عملية تحويل
 // ===================================
 export async function deleteTransferService(id) {
-  return runInTransaction(
+  const result = runInTransaction(
     [TRANSFER_STORE_NAME, CASHBOX_STORE_NAME],
     "readwrite",
     async (tx) => {
@@ -477,6 +481,10 @@ export async function deleteTransferService(id) {
       return transfer;
     }
   );
+
+  markBackupDirty("deleted-transfer");
+
+  return result;
 }
 
 const transferService = {

@@ -438,7 +438,7 @@ export async function updateExchangeService(id, formData) {
   // نجهز بيانات الحركة المعدّلة قبل فتح المعاملة.
   const preparedExchange = prepareExchangeInput(formData);
 
-  return runInTransaction(
+  const result = runInTransaction(
     [EXCHANGES_STORE, CASHBOXES_STORE],
     "readwrite",
     async (tx) => {
@@ -477,6 +477,10 @@ export async function updateExchangeService(id, formData) {
       return savedExchange;
     }
   );
+
+  markBackupDirty("updated-exchange");
+
+  return result;
 }
 
 // =========== حذف حركة صرف ============ //
@@ -485,7 +489,7 @@ export async function deleteExchangeService(id) {
     throw new RangeError("Exchange ID must be a valid positive integer.");
   }
 
-  return runInTransaction(
+  const result = runInTransaction(
     [EXCHANGES_STORE, CASHBOXES_STORE],
     "readwrite",
     async (tx) => {
@@ -518,4 +522,8 @@ export async function deleteExchangeService(id) {
       return oldExchange;
     }
   );
+
+  markBackupDirty("deleted-exchange");
+
+  return result;
 }
