@@ -23,12 +23,20 @@ import {
   MdCalendarMonth,
   MdDeleteOutline,
   MdEdit,
-  MdFormatListBulleted,
+  MdRestartAlt,
 } from "react-icons/md";
 import { useState } from "react";
 import AddDeptAction from "../depts/addDeptAction_depts";
+import { useParams } from "react-router-dom";
+import usePartyDebtAccount from "../../hooks/debt_hooks/usePartyDebtAccount";
+import { formatSyriaDateTime } from "../../shared/utilsDate";
+import useDebtActions from "../../hooks/debt_hooks/useDebtActions";
+import BasicToast from "../../shared/ui/toast";
+import useDebts from "../../hooks/debt_hooks/useDebts";
+import UpdateDeptAction from "./updateDebtDialog";
+import DeleteDialog from "../../shared/ui/deleteDialog";
 
-export default function ExchangeHistory() {
+export default function PartyAccount() {
   const primary = "rgba(250,229,110,0.992)";
   const secondary = "#ffffff";
   const text = "black";
@@ -79,39 +87,6 @@ export default function ExchangeHistory() {
     },
   };
 
-  const movements = [
-    {
-      id: 1,
-      date: "01/10/2026",
-      operation: "أخذ من المكتب",
-      amount: "1,000",
-      currency: "USD",
-      effect: "لنا (دين على الطرف)",
-      effectType: "pending",
-      note: "تعليق بدل نشر",
-    },
-    {
-      id: 2,
-      date: "03/10/2026",
-      operation: "دفع للمكتب",
-      amount: "300",
-      currency: "USD",
-      effect: "له (مستحق للطرف)",
-      effectType: "completed",
-      note: "تسديد لمبلغ من طرف عمولة",
-    },
-    {
-      id: 3,
-      date: "05/10/2026",
-      operation: "أخذ من المكتب",
-      amount: "200",
-      currency: "EUR",
-      effect: "له (مستحق للطرف)",
-      effectType: "completed",
-      note: "أخلة للمدين كنت",
-    },
-  ];
-
   const columns = [
     { id: "date", label: "التاريخ" },
     { id: "amount", label: "المبلغ" },
@@ -121,7 +96,134 @@ export default function ExchangeHistory() {
     { id: "actions", label: "الإجراءات" },
   ];
 
+  const { partyId } = useParams();
+
+  const emptyForm = {
+    currency: "",
+    dateFromTimestamp: "",
+    dateToExclusiveTimestamp: "",
+  };
+
+  // ==== states ==== //
+  const [debtFilters, setDebtFilters] = useState(emptyForm);
+  const [currentDebt, setCurrentDebt] = useState(null);
   const [openAddDept, setOpenAddDept] = useState(false);
+  const [openUpdateDebt, setOpenUpdateDebt] = useState();
+  const [openDeleteDebt, setOpenDeleteDebt] = useState(false);
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "",
+  });
+
+  // ==== services ==== //
+  const {
+    party,
+    balances,
+    loading,
+    refetch: accountRefetch,
+  } = usePartyDebtAccount(Number(partyId));
+  const { debts, refetch } = useDebts({ partyId, ...debtFilters });
+  const { createDebt, creating, updateDebt, updating, deleteDebt, deleting } =
+    useDebtActions();
+
+  // ==== functions ==== //
+
+  // دالة جمع قيم المدخلات
+  function handleInputOnchange(event) {
+    const { name, value } = event.target;
+
+    setDebtFilters((prevValue) => {
+      return { ...prevValue, [name]: value };
+    });
+  }
+
+  // دالة إضافة دين جديد
+  async function addDebt(formData) {
+    try {
+      await createDebt({ partyId, ...formData });
+
+      refetch(); // تحديث سجل الحركات
+      accountRefetch(); // تحديث ارصدة الحساب
+
+      setToast({
+        open: true,
+        message: "تمت إضافة الدين بنجاح",
+        severity: "success",
+      });
+
+      setOpenAddDept(false);
+    } catch (error) {
+      setToast({
+        open: true,
+        message: `فشل إضافة الدين: ${error.message}`,
+        severity: "error",
+      });
+    }
+  }
+
+  // دالة تعديل حركة دين
+  async function updateDebtFun(updateForm) {
+    try {
+      await updateDebt(currentDebt.id, updateForm);
+
+      refetch(); // تحديث سجل الحركات
+      accountRefetch(); // تحديث ارصدة الحساب
+
+      setToast({
+        open: true,
+        message: "تم تعديل الدين بنجاح",
+        severity: "success",
+      });
+
+      setOpenUpdateDebt(false);
+    } catch (error) {
+      setToast({
+        open: true,
+        message: `فشل تعديل الدين: ${error.message}`,
+        severity: "error",
+      });
+    }
+  }
+
+  // دالة حذف حركة دين
+  async function deleteDebtFun() {
+    try {
+      await deleteDebt(currentDebt.id);
+
+      refetch(); // تحديث سجل الحركات
+      accountRefetch(); // تحديث ارصدة الحساب
+
+      setToast({
+        open: true,
+        message: "تم حذف الدين بنجاح",
+        severity: "success",
+      });
+
+      setOpenDeleteDebt(false);
+    } catch (error) {
+      setToast({
+        open: true,
+        message: `فشل حذف الدين: ${error.message}`,
+        severity: "error",
+      });
+    }
+  }
+
+  if (loading || !party)
+    return (
+      <Typography
+        sx={{
+          color: "#fff",
+          my: 5,
+          textAlign: "center",
+          fontSize: "1.5rem",
+          fontFamily: fontFamily,
+        }}
+      >
+        جار تحميل الحساب..
+      </Typography>
+    );
 
   return (
     <Paper
@@ -133,6 +235,40 @@ export default function ExchangeHistory() {
         fontFamily: fontFamily,
       }}
     >
+      {/*helper components*/}
+      <AddDeptAction
+        open={openAddDept}
+        onClose={() => setOpenAddDept(false)}
+        onAdd={addDebt}
+        loading={creating}
+      />
+
+      <UpdateDeptAction
+        open={openUpdateDebt}
+        onClose={() => {
+          setOpenUpdateDebt(false);
+          setCurrentDebt(null);
+        }}
+        onUpdate={updateDebtFun}
+        debt={currentDebt}
+        loading={updating}
+      />
+
+      <DeleteDialog
+        open={openDeleteDebt}
+        onClose={() => setOpenDeleteDebt(false)}
+        onConfirm={deleteDebtFun}
+        loading={deleting}
+      />
+
+      <BasicToast
+        open={toast.open}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        message={toast.message}
+        severity={toast.severity}
+      />
+
+      {/*main component*/}
       <Box
         sx={{
           background: "linear-gradient(145deg, #191919, #101010)",
@@ -167,10 +303,10 @@ export default function ExchangeHistory() {
                   fontWeight: "bold",
                 }}
               >
-                أحمد محمد علي
+                {party.fullName}
               </Typography>
               <Typography sx={{ color: secondary, fontFamily, fontSize: 16 }}>
-                رقم الهاتف
+                {party.phoneNumber}
               </Typography>
             </Box>
           </Box>
@@ -181,67 +317,122 @@ export default function ExchangeHistory() {
               color: text,
               display: "flex",
               backgroundColor: primary,
-              gap: 0.5
+              gap: 0.5,
             }}
           >
             <FaPlus style={{ color: text }} />
-            <Typography sx={{fontFamily, fontWeight: 500}}>إضافة حركة دين</Typography>
+            <Typography sx={{ fontFamily, fontWeight: 500 }}>
+              إضافة حركة دين
+            </Typography>
           </Button>
         </Box>
         <Divider sx={{ backgroundColor: primary, opacity: 0.5, my: 2 }} />
         <Grid container rowSpacing={2} columnSpacing={3}>
-          <Grid
-            size={4}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              backgroundColor: "#f6bc0078",
-              border: `1px solid #f6bd00`,
-              borderRadius: 4,
-              p: 1.5,
-            }}
-          >
-            <Typography>680 USD</Typography>
-            <Typography>لنا</Typography>
-          </Grid>
+          {balances.map((balance) => (
+            <Grid
+              size={4}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                backgroundColor: "#fff",
+                borderRadius: 4,
+                p: 2,
+                px: 3,
+                border: "1px solid #f6bd00",
+                borderLeft: "5px solid #f6bd00",
+              }}
+            >
+              <Typography
+                sx={{ fontSize: "20px", color: "#111", fontWeight: 700 }}
+              >
+                {balance.currency}
+              </Typography>
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <Typography
+                  sx={{
+                    ...cellStyle,
+                    px: 2.5,
+                    borderRadius: 2,
 
-          <Grid
-            size={4}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              backgroundColor: "#00f6f278",
-              border: `1px solid #00f6f2`,
-              borderRadius: 4,
-              p: 1.5,
-            }}
-          >
-            <Typography>400 EUR</Typography>
-            <Typography>له</Typography>
-          </Grid>
+                    background:
+                      balance.direction === "لنا" ? "#00A651" : "#FF0000",
+
+                    fontFamily: fontFamily,
+                  }}
+                >
+                  {balance.direction}
+                </Typography>
+                <Typography
+                  sx={{ fontSize: "20px", color: "#111", fontWeight: 700 }}
+                >
+                  {balance.amount}
+                </Typography>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
       </Box>
 
       {/* Filters */}
 
       <Box sx={{ p: 4 }}>
-        <Box sx={{ display: "flex", gap: 0.5 }}>
-          <FaFilter style={{ color: primary, fontSize: 20 }} />
-          <Typography sx={{ color: primary, fontFamily, fontSize: 20 }}>
-            تصفية كشف الحساب:
-          </Typography>
+        <Box
+          sx={{ display: "flex", justifyContent: "space-between", gap: 0.5 }}
+        >
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <FaFilter style={{ color: primary, fontSize: 20 }} />
+            <Typography sx={{ color: primary, fontFamily, fontSize: 20 }}>
+              تصفية كشف الحساب:
+            </Typography>
+          </Box>
+          <Button
+            variant="outlined"
+            onClick={() => setDebtFilters(emptyForm)}
+            sx={{
+              color: primary,
+              fontFamily,
+              borderColor: primary,
+              gap: 0.5,
+
+              "&:hover": {
+                backgroundColor: "rgba(250, 229, 110, 0.16)",
+                borderColor: primary,
+              },
+            }}
+          >
+            <MdRestartAlt
+              style={{
+                fontSize: 25,
+                padding: 1,
+              }}
+            />
+
+            <Typography
+              sx={{
+                fontFamily,
+                alignSelf: "end",
+              }}
+            >
+              إعادة ضبط الفلاتر
+            </Typography>
+          </Button>
         </Box>
         <Grid container rowSpacing={2} columnSpacing={3}>
           <Grid size={4}>
             <Typography sx={{ color: secondary, fontFamily, my: 0.4 }}>
               العملة:
             </Typography>
-            <Select fullWidth defaultValue="all" displayEmpty sx={filterField}>
-              <MenuItem value="all">جميع العملات</MenuItem>
-              <MenuItem value="USD">USD - دولار أمريكي</MenuItem>
-              <MenuItem value="EUR">EUR - يورو</MenuItem>
-              <MenuItem value="SYP">SYP - ليرة سورية</MenuItem>
-              <MenuItem value="TRY">TRY - ليرة تركية</MenuItem>
+            <Select
+              name="currency"
+              value={debtFilters.currency}
+              onChange={handleInputOnchange}
+              fullWidth
+              displayEmpty
+              sx={filterField}
+            >
+              {balances.map((balance) => (
+                <MenuItem value={balance.currency}>{balance.currency}</MenuItem>
+              ))}
             </Select>
           </Grid>
           <Grid size={4}>
@@ -250,6 +441,9 @@ export default function ExchangeHistory() {
             </Typography>
             <TextField
               fullWidth
+              name="dateFromTimestamp"
+              value={debtFilters.dateFromTimestamp}
+              onChange={handleInputOnchange}
               type="date"
               sx={filterField}
               InputLabelProps={{
@@ -264,6 +458,9 @@ export default function ExchangeHistory() {
             <TextField
               fullWidth
               type="date"
+              name="dateToExclusiveTimestamp"
+              value={debtFilters.dateToExclusiveTimestamp}
+              onChange={handleInputOnchange}
               sx={filterField}
               InputLabelProps={{
                 shrink: true,
@@ -315,20 +512,13 @@ export default function ExchangeHistory() {
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 0.5,
+            gap: 1,
             padding: "7px 14px",
-            borderRadius: 6,
+            borderRadius: 2,
             border: `1px solid ${goldBorder}`,
             backgroundColor: "rgba(250,229,110,0.06)",
           }}
         >
-          <MdFormatListBulleted
-            style={{
-              color: primary,
-              fontSize: 30,
-            }}
-          />
-
           <Typography
             sx={{
               color: primary,
@@ -336,7 +526,16 @@ export default function ExchangeHistory() {
               fontWeight: 600,
             }}
           >
-            عدد الحركات
+            عدد الحركات:
+          </Typography>
+          <Typography
+            sx={{
+              color: "#fff",
+              fontSize: 21,
+              fontWeight: 600,
+            }}
+          >
+            {debts.length}
           </Typography>
         </Box>
       </Box>
@@ -382,8 +581,8 @@ export default function ExchangeHistory() {
           {/* Table Body */}
 
           <TableBody>
-            {movements.map((row) => (
-              <TableRow key={row.id}>
+            {debts.map((debt) => (
+              <TableRow key={debt.id}>
                 {/* Date */}
 
                 <TableCell sx={cellStyle}>
@@ -401,7 +600,9 @@ export default function ExchangeHistory() {
                       }}
                     />
 
-                    <Typography sx={textStyle}>{row.date}</Typography>
+                    <Typography sx={textStyle}>
+                      {formatSyriaDateTime(debt.date).replace(",", "-")}
+                    </Typography>
                   </Box>
                 </TableCell>
 
@@ -412,7 +613,7 @@ export default function ExchangeHistory() {
                     ...cellStyle,
                   }}
                 >
-                  {row.amount}
+                  {debt.amount}
                 </TableCell>
 
                 {/* Currency */}
@@ -422,31 +623,21 @@ export default function ExchangeHistory() {
                     ...cellStyle,
                   }}
                 >
-                  {row.currency}
+                  {debt.currency}
                 </TableCell>
 
                 {/* Effect */}
 
                 <TableCell align="center" sx={cellStyle}>
                   <Chip
-                    label={row.effect}
+                    label={debt.direction}
                     sx={{
                       ...cellStyle,
                       p: 2.5,
                       borderRadius: 10,
 
                       background:
-                        row.effectType === "pending"
-                          ? "linear-gradient(135deg, #f9dc86, #eabf4c)"
-                          : "linear-gradient(135deg, #424750, #303640)",
-
-                      color:
-                        row.effectType === "pending" ? "#211800" : "#dce7ff",
-
-                      border:
-                        row.effectType === "pending"
-                          ? "1px solid #e6c15c"
-                          : "1px solid #606b7c",
+                        debt.direction === "لنا" ? "#00A651" : "#FF0000",
 
                       fontFamily: fontFamily,
                     }}
@@ -461,7 +652,7 @@ export default function ExchangeHistory() {
                     color: secondary,
                   }}
                 >
-                  {row.note || "—"}
+                  {debt.note || "—"}
                 </TableCell>
 
                 {/* Actions */}
@@ -478,6 +669,10 @@ export default function ExchangeHistory() {
                     {/* Edit */}
 
                     <IconButton
+                      onClick={() => {
+                        setOpenUpdateDebt(true);
+                        setCurrentDebt(debt);
+                      }}
                       sx={{
                         width: 50,
                         height: 50,
@@ -497,6 +692,10 @@ export default function ExchangeHistory() {
                     {/* Delete */}
 
                     <IconButton
+                      onClick={() => {
+                        setOpenDeleteDebt(true);
+                        setCurrentDebt(debt);
+                      }}
                       sx={{
                         width: 50,
                         height: 50,
@@ -518,7 +717,6 @@ export default function ExchangeHistory() {
           </TableBody>
         </Table>
       </TableContainer>
-      <AddDeptAction open={openAddDept} onClose={() => setOpenAddDept(false)} />
     </Paper>
   );
 }

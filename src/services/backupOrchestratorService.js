@@ -35,7 +35,12 @@ const JSON_MIME_TYPE = "application/json";
 
 const BUSINESS_TIME_ZONE = "Asia/Damascus";
 
-const DAILY_STORE_NAMES = ["exchanges", "transfers", "debts"];
+const DAILY_STORE_NAMES = [
+  "exchanges",
+  "transfers",
+  "debts",
+  "electronicWalletOperations",
+];
 
 // ======================================================
 // General Helpers

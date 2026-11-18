@@ -34,7 +34,7 @@ function normalizePartyData(data, currentParty = null) {
       typeof data.fullName === "string"
         ? data.fullName.trim()
         : currentParty?.fullName ?? "",
-    fhoneNumber: typeof data.fhoneNumber === "string" ? data.fhoneNumber : "",
+    phoneNumber: typeof data.phoneNumber === "string" ? data.phoneNumber : "",
   };
 }
 

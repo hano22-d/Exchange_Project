@@ -16,6 +16,7 @@ import ExchangeList from "../featuers/archive/exchangeList";
 import TransferList from "../featuers/archive/transferList";
 import useExchanges from "../hooks/exchanges-Hooks/useExchanges";
 import useTransfers from "../hooks/transfer_Hooks/useTransfers";
+import { Link } from "react-router-dom";
 
 // =================================
 // الفلاتر الابتدائية
@@ -224,22 +225,21 @@ export default function Archive() {
           </Box>
         </Box>
 
-        <Button
-          variant="contained"
-          sx={{
+        <Link
+        to={"/operations"}
+          style={{
+            textDecoration: 'none',
             alignSelf: "center",
             fontFamily,
+            borderRadius: '10px',
             backgroundColor: primary,
             color: text,
             padding: "7px 15px",
             fontWeight: "bold",
-            "&:hover": {
-              backgroundColor: primary,
-            },
           }}
         >
           إضافة عملية جديدة
-        </Button>
+        </Link>
       </Box>
 
       <Box

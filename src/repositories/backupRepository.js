@@ -6,6 +6,9 @@ export const BACKUP_STORE_NAMES = [
   "transfers",
   "parties",
   "debts",
+  "electronicWallets",
+  "electronicWalletBalances",
+  "electronicWalletOperations",
 ];
 
 // جلب جميع بيانات قاعدة البيانات

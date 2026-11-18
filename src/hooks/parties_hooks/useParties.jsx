@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import partyService from "../../services/partyService";
 
-export default function useParties(searchTerm = "") {
+export default function useParties() {
   const [parties, setParties] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -9,7 +9,7 @@ export default function useParties(searchTerm = "") {
   const requestIdRef = useRef(0);
 
   // جلب الأشخاص أو البحث عنهم
-  const fetchParties = useCallback(async () => {
+  const fetchParties = useCallback(async (searchTerm) => {
     const requestId = ++requestIdRef.current;
 
     setLoading(true);
@@ -36,7 +36,7 @@ export default function useParties(searchTerm = "") {
         setLoading(false);
       }
     }
-  }, [searchTerm]);
+  }, []);
 
   // الجلب عند تحميل Hook أو تغير نص البحث
   useEffect(() => {

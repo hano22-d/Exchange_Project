@@ -9,6 +9,9 @@ import Exchange from "../featuers/operations/exchange_operations";
 import Transfer from "../featuers/operations/transfer_operations";
 import Dept from "../featuers/operations/dept_operations";
 import ArchiveDetailsSwitcher from "../featuers/archive/archiveDetailsSwicher";
+import PartyAccount from "../featuers/depts/accountStatement_depts";
+import ElectronicWallets from "../pages/wallet";
+import ElectronicWalletDetails from "../featuers/electronicWallets/electronicWalletDetails";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +52,18 @@ export const router = createBrowserRouter([
       {
         path: "depts",
         element: <Depts />,
+      },
+      {
+        path: "/debts/:partyId",
+        element: <PartyAccount/>
+      },
+      {
+        path: "electronic-wallets",
+        element: <ElectronicWallets />,
+      },
+      {
+        path: "electronic-wallets/:walletId",
+        element: <ElectronicWalletDetails />,
       },
     ],
   },

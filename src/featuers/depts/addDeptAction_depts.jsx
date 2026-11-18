@@ -10,11 +10,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 
 import { FaFileInvoice } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
+import useCashboxces from "../../hooks/cashbox_Hooks/usecashboxes";
+import { viewCreatedCashboxes } from "../../shared/utils";
 
-export default function AddDeptAction({ open, onClose }) {
+export default function AddDeptAction({ open, onClose, onAdd, loading }) {
   const primary = "rgba(250,229,110,0.992)";
   const secondary = "#ffffff";
   const bodyColor1 = "#252525";
@@ -152,6 +155,31 @@ export default function AddDeptAction({ open, onClose }) {
     },
   };
 
+  const [addDebtForm, setAddDebtForm] = useState({
+    amount: "",
+    currency: "",
+    direction: "",
+    date: "",
+    note: "",
+  });
+
+  const { cashboxes } = useCashboxces();
+
+  // ==== functions ==== //
+  function handleInputOnchange(event) {
+    const { name, value } = event.target;
+
+    setAddDebtForm((prevValue) => {
+      return { ...prevValue, [name]: value };
+    });
+  }
+
+  const currencies = viewCreatedCashboxes(cashboxes);
+
+  function handleSendDebtForm() {
+    onAdd(addDebtForm);
+  }
+
   return (
     <Dialog
       open={open}
@@ -215,34 +243,16 @@ export default function AddDeptAction({ open, onClose }) {
 
       <DialogContent sx={{ p: 0, overflow: "visible" }}>
         <Grid container rowSpacing={2} columnSpacing={3} sx={{ my: 2 }}>
-          <Grid
-            size={12}
-            sx={{
-              p: 2,
-              backgroundColor: bodyColor1,
-              borderRadius: 1,
-            }}
-          >
-            <Typography sx={fieldLabelStyle}>الطرف المحدد:</Typography>
-
-            <Typography
-              sx={{
-                color: secondary,
-                fontFamily,
-                fontSize: 14,
-              }}
-            >
-              أحمد محمد علي
-            </Typography>
-          </Grid>
-
           <Grid size={6}>
             <Typography sx={fieldLabelStyle}>التاريخ:</Typography>
 
             <TextField
+              name="date"
+              value={addDebtForm.date}
+              onChange={handleInputOnchange}
               size="small"
               fullWidth
-              type="date"
+              type="datetime-local"
               sx={commonInputStyles}
             />
           </Grid>
@@ -250,17 +260,19 @@ export default function AddDeptAction({ open, onClose }) {
           <Grid size={6}>
             <Typography sx={fieldLabelStyle}>اتجاه الحركة:</Typography>
 
-            <Select fullWidth defaultValue="none" sx={selectStyles}>
-              <MenuItem value="none" sx={{ display: "none", ...menuItemStyle }}>
-                اختر اتجاه الحركة
+            <Select
+              name="direction"
+              value={addDebtForm.direction}
+              onChange={handleInputOnchange}
+              fullWidth
+              sx={selectStyles}
+            >
+              <MenuItem value="لنا" sx={menuItemStyle}>
+                لنا
               </MenuItem>
 
-              <MenuItem value="forUs" sx={menuItemStyle}>
-                المكتب أعطى للطرف (لنا)
-              </MenuItem>
-
-              <MenuItem value="forTheir" sx={menuItemStyle}>
-                الطرف أعطى للمكتب (علينا)
+              <MenuItem value="له" sx={menuItemStyle}>
+                له
               </MenuItem>
             </Select>
           </Grid>
@@ -269,6 +281,9 @@ export default function AddDeptAction({ open, onClose }) {
             <Typography sx={fieldLabelStyle}>المبلغ:</Typography>
 
             <TextField
+              name="amount"
+              value={addDebtForm.amount}
+              onChange={handleInputOnchange}
               size="small"
               type="number"
               placeholder="أدخل المبلغ"
@@ -292,26 +307,23 @@ export default function AddDeptAction({ open, onClose }) {
           <Grid size={6}>
             <Typography sx={fieldLabelStyle}>العملة:</Typography>
 
-            <Select fullWidth defaultValue="none" sx={selectStyles}>
-              <MenuItem value="none" sx={{ display: "none", ...menuItemStyle }}>
-                اختر نوع العملة
-              </MenuItem>
-
-              <MenuItem value="USD" sx={menuItemStyle}>
-                USD - دولار أمريكي
-              </MenuItem>
-
-              <MenuItem value="EUR" sx={menuItemStyle}>
-                EUR - يورو
-              </MenuItem>
-
-              <MenuItem value="SYP" sx={menuItemStyle}>
-                SYP - ليرة سورية
-              </MenuItem>
-
-              <MenuItem value="TRY" sx={menuItemStyle}>
-                TRY - ليرة تركية
-              </MenuItem>
+            <Select
+              name="currency"
+              value={addDebtForm.currency}
+              onChange={handleInputOnchange}
+              fullWidth
+              defaultValue="none"
+              sx={selectStyles}
+            >
+              {currencies.map((currency) => (
+                <MenuItem
+                  key={currency.value}
+                  value={currency.value}
+                  sx={{ ...menuItemStyle }}
+                >
+                  {`${currency.currencyLabel}`}
+                </MenuItem>
+              ))}
             </Select>
           </Grid>
 
@@ -319,6 +331,9 @@ export default function AddDeptAction({ open, onClose }) {
             <Typography sx={fieldLabelStyle}>ملاحظات:</Typography>
 
             <TextField
+              name="note"
+              value={addDebtForm.note}
+              onChange={handleInputOnchange}
               fullWidth
               type="text"
               placeholder="اكتب ملاحظة..."
@@ -341,8 +356,13 @@ export default function AddDeptAction({ open, onClose }) {
           إلغاء
         </Button>
 
-        <Button variant="contained" onClick={onClose} sx={submitButtonStyle}>
-          إضافة حركة
+        <Button
+          variant="contained"
+          onClick={handleSendDebtForm}
+          disabled={loading}
+          sx={submitButtonStyle}
+        >
+          {loading? "جار الإضافة": "إضافة"}
         </Button>
       </Box>
     </Dialog>

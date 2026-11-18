@@ -13,7 +13,7 @@ export function formatNumber(value) {
     return "—";
   }
 
-  const number = Number(value);
+  const number = Number(value.toFixed(2));
 
   if (!Number.isFinite(number)) {
     return "—";

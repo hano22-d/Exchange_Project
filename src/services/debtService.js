@@ -2,7 +2,10 @@ import { getPartyById } from "../repositories/partyRepository.js";
 import { runInTransaction } from "../db/transaction.js";
 import debtRepository from "../repositories/debtRepository.js";
 import cashboxRepository from "../repositories/cashboxrepository.js";
-import { getTimestampFromDateTimeLocal } from "../shared/utilsDate.js";
+import {
+  buildTimestampDateRange,
+  getTimestampFromDateTimeLocal,
+} from "../shared/utilsDate.js";
 import { markBackupDirty } from "./backupSchedulerService.js";
 
 const PARTIES_STORE = "parties";
@@ -149,7 +152,7 @@ function calculateDebtBalances(debts) {
 
 // ترتيب حركات الدين من الأحدث إلى الأقدم
 function sortDebtsByDateDesc(debts) {
-  return [...debts].sort((a, b) => b.date - a.date);
+  return [...debts].sort((a, b) => b.date + a.date);
 }
 
 // جلب حساب شخص: بياناته وحركاته وأرصدة عملاته
@@ -179,7 +182,12 @@ export function getPartyDebtAccountService(partyId) {
 
 // الاستعلام عن حركات الدين باستخدام الفلاتر
 export function queryDebtsService(filters = {}) {
-  const normalizedFilters = { ...filters };
+  const dateRange = buildTimestampDateRange({
+    dateFrom: filters.dateFromTimestamp || undefined,
+    dateTo: filters.dateToExclusiveTimestamp || undefined,
+  });
+
+  const normalizedFilters = { ...filters, ...dateRange };
 
   if (
     normalizedFilters.partyId !== undefined &&

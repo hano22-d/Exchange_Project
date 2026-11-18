@@ -15,10 +15,15 @@ import {
 } from "react-icons/fa";
 import { FaHashtag, FaMoneyBillTransfer } from "react-icons/fa6";
 import { MdPayments } from "react-icons/md";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useTransfer from "../../hooks/transfer_Hooks/useTransfer";
 import { formatSyriaDateTime } from "../../shared/utilsDate";
 import TransferReceipt from "../../printing/transferReseipt";
+import EditTransferDialog from "./editTransferDialog";
+import { useState } from "react";
+import { useTransferActions } from "../../hooks/transfer_Hooks/useTransferActions";
+import BasicToast from "../../shared/ui/toast";
+import DeleteDialog from "../../shared/ui/deleteDialog";
 
 export default function TransferDetails() {
   const primary = "#FAE56E";
@@ -77,8 +82,66 @@ export default function TransferDetails() {
   };
 
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  const { transfer, loading } = useTransfer(Number(id));
+  // services
+  const { transfer, loading, setTransferData } = useTransfer(Number(id));
+  const { updateTransfer, updating, deleteTransfer, deleting } =
+    useTransferActions();
+
+  // states
+  const [openDialog, setOpenDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "",
+  });
+
+  //دالة تعديل الحوالة
+  async function handleUpdateTransfer(updateForm) {
+    try {
+      const updatedTransfer = await updateTransfer(transfer.id, updateForm);
+
+      setTransferData(updatedTransfer);
+
+      setToast({
+        open: true,
+        message: "تم تعديل الحوالة بنجاح",
+        severity: "success",
+      });
+
+      setOpenDialog(false);
+    } catch (error) {
+      setToast({
+        open: true,
+        message: `فشل التعديل : ${error.message}`,
+        severity: "error",
+      });
+    }
+  }
+
+  // دالة حذف حوالة
+  async function handleDeleteTransfer(id) {
+    try {
+      await deleteTransfer(id);
+
+      setToast({
+        open: true,
+        message: "تم حذف الحوالة بنجاح",
+        severity: "success",
+      });
+
+      setDeleteDialogOpen(false);
+      navigate("/archive");
+    } catch (error) {
+      setToast({
+        open: true,
+        message: `تعذر حذف الحوالة: ${error.message}`,
+        severity: "error",
+      });
+    }
+  }
 
   if (loading || !transfer) {
     return (
@@ -100,6 +163,31 @@ export default function TransferDetails() {
       {/*helper components */}
       <TransferReceipt transfer={transfer} />
 
+      {openDialog && (
+        <EditTransferDialog
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          onConfirm={handleUpdateTransfer}
+          transfer={transfer}
+          loading={updating}
+        />
+      )}
+
+      <DeleteDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={() => handleDeleteTransfer(transfer.id)}
+        loading={deleting}
+      />
+
+      <BasicToast
+        open={toast.open}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        message={toast.message}
+        severity={toast.severity}
+      />
+
+      {/*main components */}
       <Box
         sx={{
           backgroundColor: "#1E1E1E",
@@ -109,8 +197,6 @@ export default function TransferDetails() {
           mt: 2,
         }}
       >
-        {/* ================= Header ================= */}
-
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           {/* العنوان */}
 
@@ -205,8 +291,6 @@ export default function TransferDetails() {
             </Box>
           </Box>
         </Box>
-
-        {/* ================= Details ================= */}
 
         <Box
           sx={{
@@ -373,26 +457,33 @@ export default function TransferDetails() {
           </Box>
         </Box>
 
-        {/* ================= Buttons ================= */}
-
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
           }}
         >
-          <Button onClick={() => window.print()} variant="outlined" sx={buttonStyle}>
+          <Button
+            onClick={() => window.print()}
+            variant="outlined"
+            sx={buttonStyle}
+          >
             <FaPrint />
             طباعة
           </Button>
 
           <Box sx={{ display: "flex", gap: 4 }}>
-            <Button variant="outlined" sx={buttonStyle}>
+            <Button
+              variant="outlined"
+              sx={buttonStyle}
+              onClick={() => setOpenDialog(true)}
+            >
               <FaEdit />
               تعديل
             </Button>
 
             <Button
+              onClick={() => setDeleteDialogOpen(true)}
               variant="contained"
               sx={{
                 ...buttonStyle,

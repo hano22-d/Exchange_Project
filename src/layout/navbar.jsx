@@ -19,6 +19,7 @@ function Navbar() {
         <Link to="/depts">الديون</Link>
         <Link to="/inventory">الجرد</Link>
         <Link to="/archive">الأرشيف</Link>
+        <Link to="/electronic-wallets">المحافظ الإلكترونية</Link>
       </Box>
 
       <Button

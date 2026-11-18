@@ -48,8 +48,48 @@ export function createDebtStore(db) {
     autoIncrement: true,
   });
 
-  store.createIndex("partyIdIndex","partyId")
-  store.createIndex("dateIndex","date")
-  store.createIndex("directionIndex","direction")
-  store.createIndex("currencyIndex","currency")
+  store.createIndex("partyIdIndex", "partyId");
+  store.createIndex("dateIndex", "date");
+  store.createIndex("directionIndex", "direction");
+  store.createIndex("currencyIndex", "currency");
+}
+
+export function createElectronicWalletStore(db) {
+  const store = db.createObjectStore("electronicWallets", {
+    keyPath: "id",
+    autoIncrement: true,
+  });
+
+  store.createIndex("providerIndex", "provider");
+  store.createIndex("nameIndex", "name");
+
+  return store;
+}
+
+export function createElectronicWalletBalanceStore(db) {
+  const store = db.createObjectStore("electronicWalletBalances", {
+    keyPath: ["walletId", "currency"],
+  });
+
+  store.createIndex("walletIdIndex", "walletId");
+  store.createIndex("currencyIndex", "currency");
+
+  return store;
+}
+
+export function createElectronicWalletOperationStore(db) {
+  const store = db.createObjectStore("electronicWalletOperations", {
+    keyPath: "id",
+    autoIncrement: true,
+  });
+
+  store.createIndex("walletIdIndex", "walletId");
+
+  store.createIndex("walletCurrencyIndex", ["walletId", "currency"]);
+
+  store.createIndex("currencyIndex", "currency");
+  store.createIndex("operationTypeIndex", "operationType");
+  store.createIndex("dateIndex", "date");
+
+  return store;
 }

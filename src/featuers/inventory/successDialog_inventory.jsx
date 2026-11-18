@@ -8,7 +8,7 @@ import {
 
 import { FaCheckDouble, FaTimes } from "react-icons/fa";
 
-export default function Success({ openSuccess, setOpenSuccess }) {
+export default function SuccessMatching({ openSuccess, onClose }) {
   const primary = "rgba(250,229,110,0.992)";
   const secondary = "#ffffff";
   const mutedColor = "#aaaaaa";
@@ -17,7 +17,7 @@ export default function Success({ openSuccess, setOpenSuccess }) {
   return (
     <Dialog
       open={openSuccess}
-      onClose={() => setOpenSuccess(false)}
+      onClose={onClose}
       slotProps={{
         paper: {
           sx: {
