@@ -12,11 +12,13 @@ import { useNavigate } from "react-router-dom";
 import {
   WALLET_COLORS,
   WALLET_FONT,
-  formatWalletNumber,
-  getCurrencyInfo,
-  useBlobObjectUrl,
-} from "./walletUiUtils";
+} from "../../shared/ui/walletUiUtils";
+import { useBlobObjectUrl } from "../../shared/ui/blobToUrl";
+import { getSupportedCurrency } from "../../shared/currencydata/currencies";
+import { formatNumber } from "../../shared/utils";
 
+
+// Logo component
 function WalletLogo({ logo, provider, size = 62 }) {
   const imageUrl = useBlobObjectUrl(logo);
 
@@ -35,7 +37,8 @@ function WalletLogo({ logo, provider, size = 62 }) {
         "& img": { objectFit: "contain", p: 0.5 },
       }}
     >
-      <AccountBalanceWalletRoundedIcon sx={{ fontSize: size * 0.55 }} />
+      <AccountBalanceWalletRoundedIcon
+       sx={{ fontSize: size * 0.55 }} />
     </Avatar>
   );
 }
@@ -136,7 +139,7 @@ export default function WalletCard({ wallet }) {
             ) : (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.1 }}>
                 {balances.slice(0, 3).map((balance) => {
-                  const currency = getCurrencyInfo(balance.currency);
+                  const currency = getSupportedCurrency(balance.currency);
                   const Flag = currency.FlagComponent;
 
                   return (
@@ -169,7 +172,7 @@ export default function WalletCard({ wallet }) {
                           direction: "ltr",
                         }}
                       >
-                        {formatWalletNumber(balance.balance)}
+                        {formatNumber(balance.balance)}
                       </Typography>
                     </Box>
                   );

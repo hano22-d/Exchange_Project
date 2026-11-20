@@ -3,8 +3,8 @@ import openDatabase from "../db/database.js";
 import { waitForTransactionCompletion } from "../db/transaction.js";
 
 import {
-  buildTimestampDateRange,
   getTimestampFromDateTimeLocal,
+  resolveTimestampDateRange,
 } from "../shared/utilsDate.js";
 
 import exchangeRpository from "../repositories/exchangeRepository.js";
@@ -319,14 +319,10 @@ export async function queryExchangesService(filters = {}, pagination = {}) {
   }
 
   // ====================================
-  //  تجهيز فلاتر التاريخ
+  // تجهيز فلاتر التاريخ
   // ====================================
 
-  const dateRange = buildTimestampDateRange({
-    dateFrom: filters.dateFrom || undefined,
-    dateTo: filters.dateTo || undefined,
-  });
-
+  const dateRange = resolveTimestampDateRange(filters);
   // ====================================
   //  تطبيع بقية الفلاتر
   // ====================================

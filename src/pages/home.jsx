@@ -13,6 +13,8 @@ import LastOper from "../featuers/home/lastOperations_home";
 import useExchanges from "../hooks/exchanges-Hooks/useExchanges";
 import useTransfers from "../hooks/transfer_Hooks/useTransfers";
 import useDebts from "../hooks/debt_hooks/useDebts";
+import useTodayDateRange from "../hooks/utilsHooks/useTodayDateRange";
+import { formatSyriaDateTime } from "../shared/utilsDate";
 
 export default function Home() {
   //حالة فتح وإقلاق dialog
@@ -25,14 +27,21 @@ export default function Home() {
     severity: "success",
   });
 
+  // ==== services ==== //
+  const { dateFromTimestamp, dateToExclusiveTimestamp } = useTodayDateRange();
+  const todayFilters = {
+    dateFromTimestamp,
+    dateToExclusiveTimestamp,
+  };
+  
   //hook اضافة صندوق
   const { addCashbox, adding } = useCashboxActions();
   //hook جلب الصناديق
   const { cashboxes, loading, error } = useCashboxces();
   //hook جلب الحركات
-  const { totalItems: exchangeTotalItems } = useExchanges();
-  const { totalItems: transferTotalItems } = useTransfers();
-  const { debts } = useDebts();
+  const { totalItems: exchangeTotalItems = 0 } = useExchanges(todayFilters);
+  const { totalItems: transferTotalItems = 0 } = useTransfers(todayFilters);
+  const { debts = [] } = useDebts(todayFilters);
 
   // دالة إضافة صندوق
   async function createCashbox(currency, balance) {
@@ -137,7 +146,11 @@ export default function Home() {
           </Typography>
         </Box>
 
-        <Statistics exchanges={exchangeTotalItems} transfers={transferTotalItems} debts={debts} />
+        <Statistics
+          exchanges={exchangeTotalItems}
+          transfers={transferTotalItems}
+          debts={debts.length}
+        />
         <LastOper cashboxes={cashboxes} />
       </Box>
     </Box>

@@ -3,8 +3,8 @@ import { runInTransaction } from "../db/transaction.js";
 import debtRepository from "../repositories/debtRepository.js";
 import cashboxRepository from "../repositories/cashboxrepository.js";
 import {
-  buildTimestampDateRange,
   getTimestampFromDateTimeLocal,
+  resolveTimestampDateRange,
 } from "../shared/utilsDate.js";
 import { markBackupDirty } from "./backupSchedulerService.js";
 
@@ -182,12 +182,26 @@ export function getPartyDebtAccountService(partyId) {
 
 // الاستعلام عن حركات الدين باستخدام الفلاتر
 export function queryDebtsService(filters = {}) {
-  const dateRange = buildTimestampDateRange({
-    dateFrom: filters.dateFromTimestamp || undefined,
-    dateTo: filters.dateToExclusiveTimestamp || undefined,
+  const {
+    dateFrom,
+    dateTo,
+    dateFromTimestamp,
+    dateToExclusiveTimestamp,
+    ...otherFilters
+  } = filters;
+
+  // توحيد نطاق التاريخ
+  const dateRange = resolveTimestampDateRange({
+    dateFrom,
+    dateTo,
+    dateFromTimestamp,
+    dateToExclusiveTimestamp,
   });
 
-  const normalizedFilters = { ...filters, ...dateRange };
+  const normalizedFilters = {
+    ...otherFilters,
+    ...dateRange,
+  };
 
   if (
     normalizedFilters.partyId !== undefined &&

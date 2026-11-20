@@ -3,8 +3,8 @@ import { runInTransaction } from "../db/transaction.js";
 import transferRepository from "../repositories/transferRepository.js";
 import { isSupportedCurrency } from "../shared/currencydata/currencies.js";
 import {
-  buildTimestampDateRange,
   getTimestampFromDateTimeLocal,
+  resolveTimestampDateRange,
 } from "../shared/utilsDate.js";
 import { markBackupDirty } from "./backupSchedulerService.js";
 
@@ -243,20 +243,12 @@ export async function queryTransferService(filters = {}, pagination = {}) {
   // ====================================
   //  تجهيز حدود التاريخ
   // ====================================
-  const hasDateInputs =
-    (typeof filters.dateFrom === "string" && filters.dateFrom.trim() !== "") ||
-    (typeof filters.dateTo === "string" && filters.dateTo.trim() !== "");
-
-  const dateRange = hasDateInputs
-    ? buildTimestampDateRange({
-        dateFrom: filters.dateFrom,
-        dateTo: filters.dateTo,
-      })
-    : {};
+  const dateRange = resolveTimestampDateRange(filters);
 
   const dateFromTimestamp = dateRange.dateFromTimestamp;
-
-  const dateToExclusiveTimestamp = dateRange.dateToExclusiveTimestamp;
+  
+  const dateToExclusiveTimestamp =
+    dateRange.dateToExclusiveTimestamp;
 
   // ====================================
   //  تطبيع بقية الفلاتر

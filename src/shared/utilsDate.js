@@ -286,7 +286,7 @@ export function formatSyriaDateTime(timestamp, locale = "en-SY") {
 }
 
 //لتعبئة الحقول بالقيمة الاولية date - timeLocal إلى صيغة timestamp دالة تحويل
-export function formatTimestampFormDateTimeLocal(timestamp) {
+export function formatTimestampFormDateTimeLocal(timestamp = Date.now()) {
   if (!Number.isFinite(timestamp)) {
     throw new Error("ال timestamp غير صالح");
   }
@@ -309,4 +309,81 @@ export function formatTimestampFormDateTimeLocal(timestamp) {
   console.log(values);
 
   return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
+}
+
+// استخراج نطاق اليوم الحالي وفق المنطقة الزمنية المطلوبة
+export function getTodayDateRange(timeZone = SYRIA_TIME_ZONE) {
+  const { year, month, day } = getZonedDateTimeParts(Date.now(), timeZone);
+
+  // تحويل تاريخ اليوم إلى YYYY-MM-DD
+  const today = [
+    String(year).padStart(4, "0"),
+    String(month).padStart(2, "0"),
+    String(day).padStart(2, "0"),
+  ].join("-");
+
+  return buildTimestampDateRange(
+    {
+      dateFrom: today,
+      dateTo: today,
+    },
+    timeZone
+  );
+}
+
+// توحيد نطاق التاريخ سواء وصل كتاريخ نصي أو Timestamp جاهز
+export function resolveTimestampDateRange(
+  filters = {},
+  timeZone = SYRIA_TIME_ZONE
+) {
+  const { dateFrom, dateTo, dateFromTimestamp, dateToExclusiveTimestamp } =
+    filters;
+
+  // التحقق من وصول حدود جاهزة
+  const hasTimestampRange =
+    (dateFromTimestamp !== undefined &&
+      dateFromTimestamp !== null &&
+      dateFromTimestamp !== "") ||
+    (dateToExclusiveTimestamp !== undefined &&
+      dateToExclusiveTimestamp !== null &&
+      dateToExclusiveTimestamp !== "");
+
+  if (hasTimestampRange) {
+    // التحقق من صحة بداية النطاق
+    if (dateFromTimestamp != null && !Number.isSafeInteger(dateFromTimestamp)) {
+      throw new RangeError("تاريخ بداية الفلترة غير صالح.");
+    }
+
+    // التحقق من صحة نهاية النطاق
+    if (
+      dateToExclusiveTimestamp != null &&
+      !Number.isSafeInteger(dateToExclusiveTimestamp)
+    ) {
+      throw new RangeError("تاريخ نهاية الفلترة غير صالح.");
+    }
+
+    // التحقق من ترتيب الحدود
+    if (
+      dateFromTimestamp != null &&
+      dateToExclusiveTimestamp != null &&
+      dateFromTimestamp >= dateToExclusiveTimestamp
+    ) {
+      throw new RangeError("نطاق التاريخ غير صالح.");
+    }
+
+    // لا نحتاج إلى تحويلها مجدداً
+    return {
+      dateFromTimestamp: dateFromTimestamp ?? undefined,
+      dateToExclusiveTimestamp: dateToExclusiveTimestamp ?? undefined,
+    };
+  }
+
+  // في حال وصول تواريخ نصية، نحولها إلى Timestamp
+  return buildTimestampDateRange(
+    {
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+    },
+    timeZone
+  );
 }

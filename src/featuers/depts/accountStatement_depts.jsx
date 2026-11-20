@@ -100,8 +100,8 @@ export default function PartyAccount() {
 
   const emptyForm = {
     currency: "",
-    dateFromTimestamp: "",
-    dateToExclusiveTimestamp: "",
+    dateFrom: "",
+    dateTo: "",
   };
 
   // ==== states ==== //
@@ -441,8 +441,8 @@ export default function PartyAccount() {
             </Typography>
             <TextField
               fullWidth
-              name="dateFromTimestamp"
-              value={debtFilters.dateFromTimestamp}
+              name="dateFrom"
+              value={debtFilters.dateFrom}
               onChange={handleInputOnchange}
               type="date"
               sx={filterField}
@@ -458,8 +458,8 @@ export default function PartyAccount() {
             <TextField
               fullWidth
               type="date"
-              name="dateToExclusiveTimestamp"
-              value={debtFilters.dateToExclusiveTimestamp}
+              name="dateTo"
+              value={debtFilters.dateTo}
               onChange={handleInputOnchange}
               sx={filterField}
               InputLabelProps={{

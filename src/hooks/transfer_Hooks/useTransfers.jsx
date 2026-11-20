@@ -3,7 +3,10 @@ import transferService from "../../services/transferService.js";
 
 const PAGE_SIZE = 10;
 
-export default function useTransfers() {
+export default function useTransfers({
+  dateFromTimestamp,
+  dateToExclusiveTimestamp,
+} = {}) {
 
   // الحوالات الموجودة في الصفحة الحالية فقط
   const [transfers, setTransfers] = useState([]);
@@ -132,15 +135,15 @@ export default function useTransfers() {
   // الجلب الأولي عند فتح الصفحة
   // =================================
   useEffect(() => {
-    refetch().catch(() => {
-      // معالجة رفض Promise داخل useEffect
-    });
-
+    refetch({
+      dateFromTimestamp,
+      dateToExclusiveTimestamp,
+    }).catch(() => {});
+  
     return () => {
       requestIdRef.current += 1;
     };
-  }, [refetch]);
-
+  }, [refetch, dateFromTimestamp, dateToExclusiveTimestamp]);
 
   return {
     transfers,

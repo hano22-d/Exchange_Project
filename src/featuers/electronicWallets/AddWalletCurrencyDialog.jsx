@@ -17,11 +17,12 @@ import {
 } from "@mui/material";
 import AddCardRoundedIcon from "@mui/icons-material/AddCardRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { toDamascusDateTimeLocal, WALLET_COLORS, WALLET_FONT } from "./walletUiUtils";
+import { WALLET_COLORS, WALLET_FONT } from "../../shared/ui/walletUiUtils";
 import { SUPPORTED_CURRENCIES } from "../../shared/currencydata/currencies";
 
 
 const FIELD_SX = {
+  mt: 1,
   "& .MuiInputLabel-root": { color: "#aaa", fontFamily: WALLET_FONT },
   "& .MuiInputLabel-root.Mui-focused": { color: WALLET_COLORS.gold },
   "& .MuiOutlinedInput-root": {
@@ -44,11 +45,22 @@ export default function AddWalletCurrencyDialog({
   cashboxes = [],
   existingBalances = [],
 }) {
-  const [currency, setCurrency] = useState("");
-  const [openingBalance, setOpeningBalance] = useState("0");
-  const [date, setDate] = useState(toDamascusDateTimeLocal());
-  const [note, setNote] = useState("");
+
+  const [addWalletCurrencyForm,setAddWalletCurrencyForm] = useState({
+    currency: "",
+    openingBalance: "",
+    date: "",
+    note: ""
+  })
   const [error, setError] = useState("");
+
+  function handleInputOnchange(event) {
+    const { name, value } = event.target;
+
+    setAddWalletCurrencyForm((prevValue) => {
+      return { ...prevValue, [name]: value };
+    });
+  }
 
   const availableCurrencies = useMemo(() => {
     const existing = new Set(existingBalances.map((item) => item.currency));
@@ -64,10 +76,6 @@ export default function AddWalletCurrencyDialog({
 
   useEffect(() => {
     if (!open) return;
-    setCurrency(availableCurrencies[0]?.code ?? "");
-    setOpeningBalance("0");
-    setDate(toDamascusDateTimeLocal());
-    setNote("");
     setError("");
   }, [open, availableCurrencies]);
 
@@ -75,8 +83,8 @@ export default function AddWalletCurrencyDialog({
     event.preventDefault();
     setError("");
 
-    const amount = Number(openingBalance);
-    if (!currency) {
+    const amount = Number(addWalletCurrencyForm.openingBalance);
+    if (!addWalletCurrencyForm.currency) {
       setError(
         "لا توجد عملة متاحة للإضافة. تأكد من وجود صندوق نقدي نشط للعملة."
       );
@@ -89,7 +97,7 @@ export default function AddWalletCurrencyDialog({
     }
 
     try {
-      await onConfirm({ currency, openingBalance: amount, date, note });
+      await onConfirm({ ...addWalletCurrencyForm, openingBalance: amount });
     } catch (submitError) {
       setError(submitError?.message || "تعذرت إضافة العملة.");
     }
@@ -136,7 +144,7 @@ export default function AddWalletCurrencyDialog({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3 }}>
+      <DialogContent sx={{ p: 3 ,background: "#111"}}>
         <Box
           component="form"
           id="wallet-currency-form"
@@ -154,9 +162,10 @@ export default function AddWalletCurrencyDialog({
                 <InputLabel id="wallet-currency-label">العملة</InputLabel>
                 <Select
                   labelId="wallet-currency-label"
-                  value={currency}
+                  name="currency"
+                  value={addWalletCurrencyForm.currency}
                   label="العملة"
-                  onChange={(event) => setCurrency(event.target.value)}
+                  onChange={handleInputOnchange}
                 >
                   {availableCurrencies.map((item) => (
                     <MenuItem key={item.code} value={item.code}>
@@ -169,18 +178,19 @@ export default function AddWalletCurrencyDialog({
               <TextField
                 label="الرصيد الافتتاحي"
                 type="number"
-                value={openingBalance}
-                onChange={(event) => setOpeningBalance(event.target.value)}
+                name="openingBalance"
+                value={addWalletCurrencyForm.openingBalance}
+                onChange={handleInputOnchange}
                 inputProps={{ min: 0, step: "any" }}
                 fullWidth
                 sx={FIELD_SX}
               />
 
               <TextField
-                label="تاريخ الرصيد الافتتاحي"
                 type="datetime-local"
-                value={date}
-                onChange={(event) => setDate(event.target.value)}
+                name="date"
+                value={addWalletCurrencyForm.date}
+                onChange={handleInputOnchange}
                 fullWidth
                 InputLabelProps={{ shrink: true }}
                 sx={FIELD_SX}
@@ -188,8 +198,9 @@ export default function AddWalletCurrencyDialog({
 
               <TextField
                 label="ملاحظة"
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
+                name="note"
+                value={addWalletCurrencyForm.note}
+                onChange={handleInputOnchange}
                 multiline
                 minRows={2}
                 fullWidth
@@ -223,6 +234,7 @@ export default function AddWalletCurrencyDialog({
             borderColor: "#555",
             fontFamily: WALLET_FONT,
             textTransform: "none",
+            ml: 1
           }}
         >
           إلغاء

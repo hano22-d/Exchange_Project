@@ -3,7 +3,7 @@ import { queryExchangesService } from "../../services/exchangeService";
 
 const PAGE_SIZE = 10;
 
-function useExchanges() {
+function useExchanges({ dateFromTimestamp, dateToExclusiveTimestamp } = {}) {
   // =================================
   // حالة البيانات
   // =================================
@@ -49,6 +49,7 @@ function useExchanges() {
       setError(null);
 
       try {
+        console.log("Exchange Filters:", filters);
         // طلب الصفحة من Service
         let result = await queryExchangesService(filters, {
           page: requestedPage,
@@ -142,14 +143,17 @@ function useExchanges() {
   // =================================
 
   useEffect(() => {
-    refetch().catch(() => {
+    refetch({
+      dateFromTimestamp,
+      dateToExclusiveTimestamp,
+    }).catch(() => {
       // منع رفض Promise غير المعالج داخل useEffect
     });
 
     return () => {
       requestIdRef.current += 1;
     };
-  }, [refetch]);
+  }, [refetch, dateFromTimestamp, dateToExclusiveTimestamp]);
 
   return {
     exchanges,

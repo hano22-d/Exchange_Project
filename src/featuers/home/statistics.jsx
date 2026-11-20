@@ -4,7 +4,7 @@ import { FaHandHoldingDollar, FaMoneyBillTransfer } from "react-icons/fa6";
 import { MdSwapHoriz } from "react-icons/md";
 
 export default function Statistics({ exchanges, transfers, debts }) {
-  const totalOperations = exchanges + transfers + debts.length;
+  const totalOperations = exchanges + transfers + debts;
 
   return (
     <>
@@ -116,7 +116,7 @@ export default function Statistics({ exchanges, transfers, debts }) {
             <Typography
               sx={{ color: "#ffb300", fontSize: 25, fontWeight: "bold" }}
             >
-              {debts.length}
+              {debts}
             </Typography>
             <Typography sx={{ color: "#c5c2c2" }}>سداد واستدانة</Typography>
           </Box>

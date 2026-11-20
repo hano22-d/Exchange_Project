@@ -13,15 +13,18 @@ import useElectronicWalletActions from "../hooks/electronicWallet_Hooks/useElect
 import {
   WALLET_COLORS,
   WALLET_FONT,
-} from "../featuers/electronicWallets/walletUiUtils";
+} from "../shared/ui/walletUiUtils";
 import WalletCard from "../featuers/electronicWallets/WalletCard";
 import AddWalletDialog from "../featuers/electronicWallets/AddWalletDialog";
 import BasicToast from "../shared/ui/toast";
 
 export default function ElectronicWallets() {
+
+  // ==== services ==== //
   const { wallets, loading, error, refetch } = useElectronicWallets();
   const { createWallet, creatingWallet } = useElectronicWalletActions();
 
+  // ==== states ====
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [toast, setToast] = useState({
     open: false,
@@ -29,6 +32,7 @@ export default function ElectronicWallets() {
     severity: "success",
   });
 
+  // ==== functions ==== //
   async function handleCreateWallet(formData) {
     const createdWallet = await createWallet(formData);
     await refetch();
@@ -50,6 +54,22 @@ export default function ElectronicWallets() {
         bgcolor: "#090909",
       }}
     >
+      {/*helper Components*/}
+      <AddWalletDialog
+        open={addDialogOpen}
+        onClose={() => setAddDialogOpen(false)}
+        onConfirm={handleCreateWallet}
+        loading={creatingWallet}
+      />
+
+      <BasicToast
+        open={toast.open}
+        onClose={() => setToast((previous) => ({ ...previous, open: false }))}
+        message={toast.message}
+        severity={toast.severity}
+      />
+
+      {/*main Component*/}
       <Box
         sx={{
           maxWidth: 1450,
@@ -255,20 +275,6 @@ export default function ElectronicWallets() {
           </>
         )}
       </Box>
-
-      <AddWalletDialog
-        open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
-        onConfirm={handleCreateWallet}
-        loading={creatingWallet}
-      />
-
-      <BasicToast
-        open={toast.open}
-        onClose={() => setToast((previous) => ({ ...previous, open: false }))}
-        message={toast.message}
-        severity={toast.severity}
-      />
     </Box>
   );
 }

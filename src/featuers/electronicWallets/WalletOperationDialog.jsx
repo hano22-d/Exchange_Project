@@ -25,8 +25,8 @@ import {
   OPERATION_LABELS,
   WALLET_COLORS,
   WALLET_FONT,
-  toDamascusDateTimeLocal,
-} from "./walletUiUtils";
+} from "../../shared/ui/walletUiUtils";
+import { formatTimestampFormDateTimeLocal } from "../../shared/utilsDate";
 
 const FIELD_SX = {
   "& .MuiInputLabel-root": { color: "#aaa", fontFamily: WALLET_FONT },
@@ -100,7 +100,7 @@ export default function WalletOperationDialog({
   const [amount, setAmount] = useState("");
   const [feeAmount, setFeeAmount] = useState("0");
   const [feeMode, setFeeMode] = useState("separate");
-  const [date, setDate] = useState(toDamascusDateTimeLocal());
+  const [date, setDate] = useState();
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
@@ -124,8 +124,8 @@ export default function WalletOperationDialog({
     setFeeMode(initialOperation?.feeMode ?? "separate");
     setDate(
       initialOperation?.date
-        ? toDamascusDateTimeLocal(initialOperation.date)
-        : toDamascusDateTimeLocal()
+        ? formatTimestampFormDateTimeLocal(initialOperation.date)
+        : formatTimestampFormDateTimeLocal()
     );
     setNote(initialOperation?.note ?? "");
     setError("");
@@ -240,7 +240,7 @@ export default function WalletOperationDialog({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3 }}>
+      <DialogContent sx={{ p: 3, background: "#111" }}>
         <Box
           component="form"
           id="wallet-operation-form"
@@ -320,7 +320,7 @@ export default function WalletOperationDialog({
                     fontFamily: WALLET_FONT,
                   }}
                 >
-                  طريقة احتساب العمولة
+                  طريقة احتساب الاجور
                 </Typography>
                 <RadioGroup
                   value={feeMode}
@@ -339,8 +339,8 @@ export default function WalletOperationDialog({
                     }
                     label={
                       operationType === "withdrawal"
-                        ? "تُدفع العمولة بشكل منفصل"
-                        : "يُدفع المبلغ والعمولة نقدًا بشكل منفصل"
+                        ? "تُدفع الاجور بشكل منفصل"
+                        : "يُدفع المبلغ الاجور نقدًا بشكل منفصل"
                     }
                     sx={{
                       color: "#ddd",
@@ -360,8 +360,8 @@ export default function WalletOperationDialog({
                     }
                     label={
                       operationType === "withdrawal"
-                        ? "تُقتطع العمولة من النقد المسلم"
-                        : "تُقتطع العمولة من المبلغ الإلكتروني"
+                        ? "تُقتطع الاجور من النقد المسلم"
+                        : "تُقتطع الاجور من المبلغ الإلكتروني"
                     }
                     sx={{
                       color: "#ddd",
@@ -427,6 +427,7 @@ export default function WalletOperationDialog({
             borderColor: "#555",
             fontFamily: WALLET_FONT,
             textTransform: "none",
+            ml: 1
           }}
         >
           إلغاء

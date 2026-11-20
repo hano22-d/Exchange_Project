@@ -16,8 +16,8 @@ import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceW
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
-import { useBlobObjectUrl, WALLET_COLORS, WALLET_FONT } from "./walletUiUtils";
-
+import { WALLET_COLORS, WALLET_FONT } from "../../shared/ui/walletUiUtils";
+import { useBlobObjectUrl } from "../../shared/ui/blobToUrl";
 
 const FIELD_SX = {
   "& .MuiInputLabel-root": { color: "#a9a9a9", fontFamily: WALLET_FONT },
@@ -42,40 +42,57 @@ export default function AddWalletDialog({
 }) {
   const isEditing = Boolean(initialWallet);
 
-  const [name, setName] = useState("");
-  const [provider, setProvider] = useState("");
-  const [note, setNote] = useState("");
+  // ==== states ==== //
+  const [walletForm, setWalletForm] = useState({
+    name: "",
+    provider: "",
+    note: "",
+  });
   const [logoFile, setLogoFile] = useState(null);
-  const [removeExistingLogo, setRemoveExistingLogo] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState(false);
-  const [duplicateWallets, setDuplicateWallets] = useState([]);
-  const [formError, setFormError] = useState("");
+  const [removeExistingLogo, setRemoveExistingLogo] = useState(false);
 
-  const logoPreview = useBlobObjectUrl(
-    logoFile || (removeExistingLogo ? null : initialWallet?.logo)
-  );
+  // ==== functions ==== //
+  function handleInputOnchange(event) {
+    const { name, value } = event.target;
+
+    setWalletForm((prevValue) => {
+      return { ...prevValue, [name]: value };
+    });
+  }
+
+  function handleLogoChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      event.target.value = "";
+      return;
+    }
+
+    setLogoFile(file);
+    setRemoveExistingLogo(false);
+  }
 
   useEffect(() => {
     if (!open) return;
-
-    setName(initialWallet?.name ?? "");
-    setProvider(initialWallet?.provider ?? "");
-    setNote(initialWallet?.note ?? "");
+    setWalletForm({
+      name: initialWallet?.name ?? "",
+      provider: initialWallet?.provider ?? "",
+      note: initialWallet?.note ?? "",
+    });
     setLogoFile(null);
     setRemoveExistingLogo(false);
     setDuplicateWarning(false);
-    setDuplicateWallets([]);
-    setFormError("");
   }, [open, initialWallet]);
 
   async function submitForm(event, confirmDuplicate = false) {
     event?.preventDefault();
-    setFormError("");
 
     const payload = {
-      name: name.trim(),
-      provider: provider.trim(),
-      note: note.trim(),
+      name: walletForm.name.trim(),
+      provider: walletForm.provider.trim(),
+      note: walletForm.note.trim(),
     };
 
     // إذا لم يرفع المستخدم شعارًا جديدًا نحافظ على الشعار القديم عند التعديل.
@@ -83,11 +100,6 @@ export default function AddWalletDialog({
       payload.logo = logoFile;
     } else if (isEditing && removeExistingLogo) {
       payload.logo = null;
-    }
-
-    if (!payload.name || !payload.provider) {
-      setFormError("يرجى إدخال اسم المحفظة ومزود الخدمة.");
-      return;
     }
 
     if (confirmDuplicate) {
@@ -99,29 +111,16 @@ export default function AddWalletDialog({
       setDuplicateWarning(false);
     } catch (error) {
       if (error?.code === "DUPLICATE_WALLET_PROVIDER") {
-        setDuplicateWallets(error.duplicateWallets ?? []);
         setDuplicateWarning(true);
         return;
       }
-
-      setFormError(error?.message || "تعذر حفظ بيانات المحفظة.");
+      throw error;
     }
   }
 
-  function handleLogoChange(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setFormError("يرجى اختيار ملف صورة صالح.");
-      event.target.value = "";
-      return;
-    }
-
-    setLogoFile(file);
-    setRemoveExistingLogo(false);
-    setFormError("");
-  }
+  const logoPreview = useBlobObjectUrl(
+    logoFile || (removeExistingLogo ? null : initialWallet?.logo)
+  );
 
   return (
     <Dialog
@@ -170,7 +169,7 @@ export default function AddWalletDialog({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ px: 3, py: 3 }}>
+      <DialogContent sx={{ px: 3, py: 3, background: "#111" }}>
         <Box
           component="form"
           id="wallet-form"
@@ -204,7 +203,7 @@ export default function AddWalletDialog({
               <Button
                 component="label"
                 variant="outlined"
-                startIcon={<AddPhotoAlternateRoundedIcon />}
+                startIcon={<AddPhotoAlternateRoundedIcon sx={{ ml: 1 }} />}
                 sx={{
                   color: WALLET_COLORS.gold,
                   borderColor: WALLET_COLORS.goldBorder,
@@ -226,14 +225,13 @@ export default function AddWalletDialog({
               </Button>
               {(logoPreview || initialWallet?.logo) && (
                 <Button
-                  size="small"
                   color="error"
-                  startIcon={<DeleteOutlineRoundedIcon />}
+                  startIcon={<DeleteOutlineRoundedIcon sx={{ ml: 1 }} />}
                   onClick={() => {
                     setLogoFile(null);
                     setRemoveExistingLogo(true);
                   }}
-                  sx={{ fontFamily: WALLET_FONT, textTransform: "none" }}
+                  sx={{ fontFamily: WALLET_FONT, textTransform: "none", px: 2 }}
                 >
                   إزالة الشعار
                 </Button>
@@ -243,8 +241,9 @@ export default function AddWalletDialog({
 
           <TextField
             label="اسم المحفظة"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
+            name="name"
+            value={walletForm.name}
+            onChange={handleInputOnchange}
             fullWidth
             required
             autoFocus
@@ -254,9 +253,10 @@ export default function AddWalletDialog({
           <TextField
             label="مزود الخدمة"
             placeholder="مثال: شام كاش"
-            value={provider}
+            name="provider"
+            value={walletForm.provider}
             onChange={(event) => {
-              setProvider(event.target.value);
+              handleInputOnchange(event);
               setDuplicateWarning(false);
             }}
             fullWidth
@@ -266,58 +266,47 @@ export default function AddWalletDialog({
 
           <TextField
             label="ملاحظات (اختياري)"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
+            name="note"
+            value={walletForm.note}
+            onChange={handleInputOnchange}
             fullWidth
             multiline
             minRows={2}
             sx={FIELD_SX}
           />
 
-          <Alert
-            severity="info"
-            sx={{
-              bgcolor: "rgba(33,150,243,.09)",
-              color: "#cbdff5",
-              alignItems: "center",
-            }}
-          >
-            إضافة المحفظة لا تنشئ عملة أو رصيدًا. ستضيف العملات وأرصدتها من صفحة
-            تفاصيل المحفظة.
-          </Alert>
-
-          {duplicateWarning && (
+          {!initialWallet && (
             <Alert
-              severity="warning"
-              action={
-                <Button
-                  color="inherit"
-                  size="small"
-                  disabled={loading}
-                  onClick={(event) => submitForm(event, true)}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    fontWeight: 700,
-                    fontFamily: WALLET_FONT,
-                  }}
-                >
-                  تأكيد الإضافة
-                </Button>
-              }
+              severity="info"
+              sx={{
+                bgcolor: "rgba(33,150,243,.09)",
+                color: "#cbdff5",
+                alignItems: "center",
+              }}
             >
-              يوجد {duplicateWallets.length || "مزود آخر"} مسجل بالمزود نفسه.
-              يمكنك المتابعة بعد التأكيد.
-              {duplicateWallets.length > 0 && (
-                <Box component="ul" sx={{ my: 0.5, pl: 2 }}>
-                  {duplicateWallets.map((item) => (
-                    <li key={item.id}>{item.name}</li>
-                  ))}
-                </Box>
-              )}
+              إضافة المحفظة لا تنشئ عملة أو رصيدًا. ستضيف العملات وأرصدتها من
+              صفحة تفاصيل المحفظة.
             </Alert>
           )}
 
-          {formError && <Alert severity="error">{formError}</Alert>}
+          {duplicateWarning && (
+            <Alert severity="warning">
+              توجد محفظة بالمزود نفسه. يمكنك المتابعة بعد التأكيد.
+              <Button
+                color="inherit"
+                size="small"
+                disabled={loading}
+                onClick={(event) => submitForm(event, true)}
+                sx={{
+                  whiteSpace: "nowrap",
+                  fontWeight: 700,
+                  fontFamily: WALLET_FONT,
+                }}
+              >
+                تأكيد الإضافة
+              </Button>
+            </Alert>
+          )}
         </Box>
       </DialogContent>
 

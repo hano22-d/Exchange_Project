@@ -17,9 +17,9 @@ function Navbar() {
         <Link to="/">الصفحة الرئيسية</Link>
         <Link to="/operations">إجراء عملية</Link>
         <Link to="/depts">الديون</Link>
-        <Link to="/inventory">الجرد</Link>
-        <Link to="/archive">الأرشيف</Link>
         <Link to="/electronic-wallets">المحافظ الإلكترونية</Link>
+        <Link to="/archive">الأرشيف</Link>
+        <Link to="/inventory">الجرد</Link>
       </Box>
 
       <Button
@@ -28,7 +28,7 @@ function Navbar() {
         variant="contained"
         sx={{
           position: "relative",
-          right: "150px",
+          right: "80px",
           background: resumeBackup
             ? "linear-gradient(135deg, #ff4b4b 0%, #d32f2f 100%)"
             : "linear-gradient(135deg,rgb(97, 230, 44) 0%,rgb(24, 201, 62) 100%)",

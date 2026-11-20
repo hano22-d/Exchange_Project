@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import debtService from "../../services/debtService";
 
-
 export default function useDebts(filters = {}) {
   const [debts, setDebts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,11 +13,15 @@ export default function useDebts(filters = {}) {
     partyId,
     currency,
     direction,
+
+    dateFrom,
+    dateTo,
+
     dateFromTimestamp,
     dateToExclusiveTimestamp,
+
     note,
   } = filters;
-
   // الاستعلام عن حركات الدين
   const fetchDebts = useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -31,8 +34,13 @@ export default function useDebts(filters = {}) {
         partyId,
         currency,
         direction,
+
+        dateFrom,
+        dateTo,
+
         dateFromTimestamp,
         dateToExclusiveTimestamp,
+
         note,
       });
 
@@ -56,8 +64,13 @@ export default function useDebts(filters = {}) {
     partyId,
     currency,
     direction,
+
+    dateFrom,
+    dateTo,
+
     dateFromTimestamp,
     dateToExclusiveTimestamp,
+
     note,
   ]);
 

@@ -14,9 +14,9 @@ import {
   OPERATION_LABELS,
   WALLET_COLORS,
   WALLET_FONT,
-  formatWalletNumber,
-} from "./walletUiUtils";
+} from "../../shared/ui/walletUiUtils";
 import { formatSyriaDateTime } from "../../shared/utilsDate";
+import { formatNumber } from "../../shared/utils";
 
 function getTypeColor(type) {
   if (
@@ -30,6 +30,7 @@ function getTypeColor(type) {
   return "default";
 }
 
+// دالة تحديد إشارة العملية
 function getAmountPrefix(operation) {
   if (operation.operationType === "adjustment") {
     return Number(operation.amount) > 0 ? "+" : "−";
@@ -178,7 +179,7 @@ export default function WalletOperationsList({
                   <Typography
                     sx={{ color: WALLET_COLORS.muted, fontSize: 11.5 }}
                   >
-                    {formatSyriaDateTime(operation.date)}
+                    {formatSyriaDateTime(operation.date).replace(","," - ")}
                   </Typography>
                 </Box>
               </Box>
@@ -193,17 +194,17 @@ export default function WalletOperationsList({
                   }}
                 >
                   {getAmountPrefix(operation)}
-                  {formatWalletNumber(Math.abs(Number(operation.amount)))}
+                  {formatNumber(Math.abs(Number(operation.amount)))}
                   <Typography
                     component="span"
-                    sx={{ color: "#bbb", fontSize: 12, ml: 0.7 }}
+                    sx={{ color: "#bbb", fontSize: 14, ml: 0.7 }}
                   >
                     {operation.currency}
                   </Typography>
                 </Typography>
                 {Number(operation.feeAmount) > 0 && (
-                  <Typography sx={{ color: WALLET_COLORS.muted, fontSize: 11 }}>
-                    العمولة: {formatWalletNumber(operation.feeAmount)}{" "}
+                  <Typography sx={{ color: WALLET_COLORS.gold, fontSize: 12 }}>
+                    الاجور: {formatNumber(operation.feeAmount)}{" "}
                     {operation.currency}
                   </Typography>
                 )}
