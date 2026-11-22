@@ -1,5 +1,5 @@
 import { indexesName } from "../db/schema";
-import { requestToPromise } from "../shared/utilsDB";
+import { getLatestRecordsByIndex, requestToPromise } from "../shared/utilsDB";
 
 const EXCHANGE_OBJECT_STORE = "exchanges";
 
@@ -183,12 +183,24 @@ export function queryExchanges(transaction, filters = {}, pagination = {}) {
   });
 }
 
+// جلب أحدث حركات الصرف
+function getLatestExchanges(tx, limit = 5) {
+  const store = tx.objectStore(EXCHANGE_OBJECT_STORE);
+
+  return getLatestRecordsByIndex(
+    store,
+    indexesName.date,
+    limit
+  );
+}
+
 const exchangeRpository = {
   queryExchanges,
   getExchangeById,
   addExchange,
   updateExchange,
   deleteExchange,
+  getLatestExchanges
 };
 
 export default exchangeRpository;

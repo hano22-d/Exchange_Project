@@ -1,4 +1,4 @@
-import { requestToPromise } from "../shared/utilsDB";
+import { getLatestRecordsByIndex, requestToPromise } from "../shared/utilsDB";
 
 const TRANSFER_STORE_NAME = "transfers";
 const DATE_INDEX_NAME = "dateIndex";
@@ -179,12 +179,24 @@ export function queryTransfers(tx, filters = {}, pagination = {}) {
   });
 }
 
+// جلب أحدث الحوالات
+function getLatestTransfers(tx, limit = 5) {
+  const store = tx.objectStore(TRANSFER_STORE_NAME);
+
+  return getLatestRecordsByIndex(
+    store,
+    DATE_INDEX_NAME,
+    limit
+  );
+}
+
 const transferRepository = {
   queryTransfers,
   getTransferById,
   addTransfer,
   updateTransfer,
   deleteTransfer,
+  getLatestTransfers
 };
 
 export default transferRepository;

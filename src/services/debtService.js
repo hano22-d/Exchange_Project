@@ -152,7 +152,7 @@ function calculateDebtBalances(debts) {
 
 // ترتيب حركات الدين من الأحدث إلى الأقدم
 function sortDebtsByDateDesc(debts) {
-  return [...debts].sort((a, b) => b.date + a.date);
+  return [...debts].sort((a, b) => b.date - a.date);
 }
 
 // جلب حساب شخص: بياناته وحركاته وأرصدة عملاته

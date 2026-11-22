@@ -1,4 +1,4 @@
-import { requestToPromise } from "../shared/utilsDB";
+import { getLatestRecordsByIndex, requestToPromise } from "../shared/utilsDB";
 
 const DEBTS_STORE = "debts";
 
@@ -238,12 +238,24 @@ export async function queryDebts(filters = {}, tx) {
   return applyRemainingDebtFilters(debts, filters, primaryQuery);
 }
 
+// جلب أحدث حركات الديون
+function getLatestDebts(tx, limit = 5) {
+  const store = tx.objectStore(DEBTS_STORE);
+
+  return getLatestRecordsByIndex(
+    store,
+    "dateIndex",
+    limit
+  );
+}
+
 const debtRepository = {
     getAllDebts,
     getDebtById,
     addDebt,
     updateDebt,
     deleteDebt,
-    queryDebts
+    queryDebts,
+    getLatestDebts
 }
 export default debtRepository

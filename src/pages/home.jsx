@@ -14,7 +14,7 @@ import useExchanges from "../hooks/exchanges-Hooks/useExchanges";
 import useTransfers from "../hooks/transfer_Hooks/useTransfers";
 import useDebts from "../hooks/debt_hooks/useDebts";
 import useTodayDateRange from "../hooks/utilsHooks/useTodayDateRange";
-import { formatSyriaDateTime } from "../shared/utilsDate";
+import useLatestOperations from "../hooks/utilsHooks/useLatestOperations";
 
 export default function Home() {
   //حالة فتح وإقلاق dialog
@@ -33,7 +33,14 @@ export default function Home() {
     dateFromTimestamp,
     dateToExclusiveTimestamp,
   };
-  
+
+  // جلب اخر خمس عمليات
+  const {
+    operations: lastOperations,
+    loading: lastOperationsLoading,
+    error: lastOperationsError,
+  } = useLatestOperations();
+
   //hook اضافة صندوق
   const { addCashbox, adding } = useCashboxActions();
   //hook جلب الصناديق
@@ -151,7 +158,12 @@ export default function Home() {
           transfers={transferTotalItems}
           debts={debts.length}
         />
-        <LastOper cashboxes={cashboxes} />
+        <LastOper
+          cashboxes={cashboxes}
+          operations={lastOperations}
+          loading={lastOperationsLoading}
+          error={lastOperationsError}
+        />
       </Box>
     </Box>
   );

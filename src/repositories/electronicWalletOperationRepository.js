@@ -1,4 +1,4 @@
-import { requestToPromise } from "../shared/utilsDB";
+import { getLatestRecordsByIndex, requestToPromise } from "../shared/utilsDB";
 
 const ELECTRONIC_WALLET_OPERATIONS_STORE = "electronicWalletOperations";
 
@@ -318,6 +318,17 @@ async function queryWalletOperations(tx, filters = {}) {
   );
 }
 
+// جلب أحدث العمليات من جميع المحافظ الإلكترونية
+function getLatestWalletOperations(tx, limit = 5) {
+  const store = tx.objectStore(ELECTRONIC_WALLET_OPERATIONS_STORE);
+
+  return getLatestRecordsByIndex(
+    store,
+    "dateIndex",
+    limit
+  );
+}
+
 // ========================================
 // Repository Object
 // ========================================
@@ -332,6 +343,7 @@ const electronicWalletOperationRepository = {
   updateWalletOperation,
   deleteWalletOperation,
   queryWalletOperations,
+  getLatestWalletOperations
 };
 
 export default electronicWalletOperationRepository;
