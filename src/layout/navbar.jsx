@@ -1,12 +1,17 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, IconButton, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import "../styles/navbar.css";
 import websiteLogo from "../assets/websiteLogo.png";
 import CloudSyncRoundedIcon from "@mui/icons-material/CloudSyncRounded";
 import RestoreRoundedIcon from "@mui/icons-material/RestoreRounded";
 import { useBackup } from "../context/BackupContext";
+import SideBar from "./sideBar";
+import { MdClose } from "react-icons/md";
+import { useState } from "react";
 
 function Navbar() {
+  const [open, setOpen] = useState(false);
+
   const { schedulerStatus, isDirty, backupNow } = useBackup();
 
   const resumeBackup = schedulerStatus.status === "auth-required" && isDirty;
@@ -69,6 +74,69 @@ function Navbar() {
         }}
       >
         <img src={websiteLogo} style={{ width: "100px" }} />
+      </Box>
+      <Box
+        onClick={() => setOpen(false)}
+        sx={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 1300,
+          backgroundColor: "rgba(0, 0, 0, 0.66)",
+          visibility: open ? "visible" : "hidden",
+          opacity: open ? 1 : 0,
+          transition: "all 0.3s ease",
+        }}
+      />
+      <Box
+        dir="rtl"
+        sx={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          width: 300,
+          height: "100vh",
+          zIndex: 1300,
+
+          background: `
+            radial-gradient(
+            circle at top left,
+          rgba(250,229,110,0.08),
+            transparent 35%
+            ),
+            linear-gradient(145deg, #17181c, #0c0d10)
+          `,
+
+          borderLeft: "2px solid rgba(250,229,110,0.992)",
+          boxShadow: "-15px 0 50px rgba(0,0,0,0.65)",
+
+          transform: open ? "translateX(0)" : "translateX(100%)",
+
+          visibility: open ? "visible" : "hidden",
+          transition: "transform 0.35s ease, visibility 0.35s",
+
+          p: 1.5,
+        }}
+      >
+        {/* Close Button */}
+
+        <IconButton
+          onClick={() => setOpen(false)}
+          sx={{
+            position: "relative",
+            right: 270,
+            bottom: 5,
+            color: "#fff",
+            border: "1px solid #555",
+            backgroundColor: "#25262a",
+            "&:hover": {
+              color: "rgba(250,229,110,0.992)",
+              borderColor: "rgba(250,229,110,0.992)",
+            },
+          }}
+        >
+          <MdClose size={15} />
+        </IconButton>
+        <SideBar />
       </Box>
     </Box>
   );
