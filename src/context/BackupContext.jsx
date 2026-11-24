@@ -39,7 +39,16 @@ function requestTokenFromUserAction() {
     return Promise.resolve(existingToken);
   }
 
-  return googleAuthService.requestGoogleAccessToken();
+  return googleAuthService.requestGoogleAccessToken().then((response) => {
+    const token =
+      typeof response === "string" ? response : response?.access_token;
+
+    if (typeof token !== "string" || !token.trim()) {
+      throw new Error("لم يتم استلام Access Token صالح من Google.");
+    }
+
+    return token;
+  });
 }
 
 // ======================================================
@@ -56,6 +65,7 @@ export function BackupProvider({ children }) {
   );
 
   const [busyAction, setBusyAction] = useState(null);
+  const [lastAction, setLastAction] = useState(null);
 
   const [error, setError] = useState(null);
 
@@ -115,6 +125,10 @@ export function BackupProvider({ children }) {
 
       setBusyAction(actionName);
 
+      // تحديد العملية الحالية التي ستظهر نتيجتها
+      setLastAction(actionName);
+
+      // تنظيف رسائل العملية السابقة
       setError(null);
       setMessage(null);
 
@@ -328,6 +342,8 @@ export function BackupProvider({ children }) {
       busyAction,
       isBusy: Boolean(busyAction),
 
+      lastAction,
+
       error,
       message,
 
@@ -348,6 +364,7 @@ export function BackupProvider({ children }) {
       connected,
       schedulerStatus,
       busyAction,
+      lastAction,
       error,
       message,
       needsReload,

@@ -6,6 +6,8 @@ import {
   FaGoogleDrive,
   FaHistory,
 } from "react-icons/fa";
+import { FaTimesCircle } from "react-icons/fa";
+import { useBackup } from "../context/BackupContext";
 export default function SideBar() {
   const primary = "rgba(255, 229, 110, 0.992)";
   const secondary = "#ffffff";
@@ -14,8 +16,25 @@ export default function SideBar() {
   const background = "#00000042";
   const fontFamily = "'Alyamama', sans-serif";
 
+  const {
+    // states
+    authReady,
+    isBusy,
+    busyAction,
+    lastAction,
+    error,
+    needsReload,
+    message,
+    connected,
+    lastBackupAt,
+    // functions
+    backupNow,
+    restoreFromDrive,
+    reloadApplication,
+  } = useBackup();
+
   return (
-    <Box>
+    <Box sx={{ mt: 7 }}>
       <Box
         sx={{
           display: "flex",
@@ -66,22 +85,19 @@ export default function SideBar() {
           }}
         >
           <Typography
-            sx={{ color: "lightgreen", fontFamily: "'Alyamama', sans-serif" }}
+            sx={{
+              color: connected ? "lightgreen" : "#ff4b4b",
+              fontFamily: "'Alyamama', sans-serif",
+            }}
           >
-            النسخ التلقائي مفعل
+            {connected ? "النسخ التلقائي مفعل" : "النسخ التلقائي غير مفعل"}
           </Typography>
-          <FaCheckCircle size={20} style={{ color: "lightgreen" }} />
+          {connected ? (
+            <FaCheckCircle size={20} style={{ color: "lightgreen" }} />
+          ) : (
+            <FaTimesCircle size={20} style={{ color: "#ff4b4b" }} />
+          )}
         </Box>
-        <Typography
-          sx={{
-            color: "#ffffff",
-            fontFamily: "'Alyamama', sans-serif",
-            fontSize: 14,
-            mt: 1,
-          }}
-        >
-          يتم حفظ نسخة احتياطية تلقائياً بعد إغلاق اليوم
-        </Typography>
       </Box>
       <Box
         sx={{
@@ -117,7 +133,7 @@ export default function SideBar() {
                 fontFamily: "'Alyamama', sans-serif",
               }}
             >
-              09:30 - 25/11/2026
+              {lastBackupAt?.split("T")[0] || ""}
             </Typography>
             <Typography
               sx={{
@@ -156,11 +172,13 @@ export default function SideBar() {
           حفظ نسخة جديدة من بيانات التطبيق
         </Typography>
         <Button
+          onClick={backupNow}
           variant="contained"
           fullWidth
+          disabled={!authReady || isBusy}
           sx={{
             display: "flex",
-            alignItems: "start",
+            alignItems: "center",
             justifyContent: "center",
             color: text,
             backgroundColor: primary,
@@ -169,10 +187,39 @@ export default function SideBar() {
           }}
         >
           <FaCloudUploadAlt size={15} />
+
           <Typography sx={{ fontSize: 12, fontFamily }}>
-            إنشاء نسخة احتياطية
+            {busyAction === "backup"
+              ? "جار إنشاء النسخة الاحتياطية..."
+              : "إنشاء نسخة احتياطية"}
           </Typography>
         </Button>
+
+        {lastAction === "backup" && (error || message) && (
+          <Box
+            sx={{
+              mt: 1.5,
+              p: 1,
+              borderRadius: 2,
+              backgroundColor: error
+                ? "rgba(244,67,54,0.08)"
+                : "rgba(0,200,83,0.08)",
+              border: `1px solid ${
+                error ? "rgba(244,67,54,0.3)" : "rgba(0,200,83,0.3)"
+              }`,
+            }}
+          >
+            <Typography
+              sx={{
+                color: error ? "#ff7070" : "#00ff80",
+                fontFamily,
+                fontSize: 12,
+              }}
+            >
+              {error ? `فشل إنشاء النسخة: ${error}` : message}
+            </Typography>
+          </Box>
+        )}
       </Box>
       <Box
         sx={{
@@ -192,18 +239,17 @@ export default function SideBar() {
               fontSize: 15,
             }}
           >
-            استعادة نسخة احتياطية
+            استعادة اخر نسخة احتياطية
           </Typography>
         </Box>
-        <Typography sx={{ color: secondary, fontFamily, fontSize: 12, mr: 3 }}>
-          استعادة البيانات من ملف احتياطي
-        </Typography>
         <Button
+          onClick={() => restoreFromDrive("current")}
           variant="outlined"
           fullWidth
+          disabled={!authReady || isBusy || needsReload}
           sx={{
             display: "flex",
-            alignItems: "start",
+            alignItems: "center",
             justifyContent: "center",
             color: primary,
             borderColor: primary,
@@ -215,10 +261,75 @@ export default function SideBar() {
           }}
         >
           <FaFolder size={15} />
+
           <Typography sx={{ color: primary, fontFamily, fontSize: 12 }}>
-            اختيار ملف للاستعادة
+            {busyAction === "restore" ? "جار استعادة النسخة..." : "استعادة"}
           </Typography>
         </Button>
+
+        {/* نتيجة عملية الاستعادة */}
+        {lastAction === "restore" && error && (
+          <Box
+            sx={{
+              mt: 1.5,
+              p: 1,
+              borderRadius: 2,
+              backgroundColor: "rgba(244,67,54,0.08)",
+              border: "1px solid rgba(244,67,54,0.3)",
+            }}
+          >
+            <Typography
+              sx={{
+                color: "#ff7070",
+                fontFamily,
+                fontSize: 12,
+                overflowWrap: "anywhere",
+              }}
+            >
+              فشلت الاستعادة: {error}
+            </Typography>
+          </Box>
+        )}
+
+        {lastAction === "restore" && needsReload && (
+          <Box
+            sx={{
+              mt: 1.5,
+              p: 1.5,
+              borderRadius: 2,
+              backgroundColor: "rgba(0,200,83,0.08)",
+              border: "1px solid rgba(0,200,83,0.3)",
+            }}
+          >
+            <Typography
+              sx={{
+                color: "#00ff80",
+                fontFamily,
+                fontSize: 12,
+                mb: 1,
+              }}
+            >
+              {message}
+            </Typography>
+
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={reloadApplication}
+              sx={{
+                backgroundColor: "#00c853",
+                color: "#000",
+                fontFamily,
+                fontWeight: "bold",
+                "&:hover": {
+                  backgroundColor: "#00e676",
+                },
+              }}
+            >
+              إعادة تحميل التطبيق
+            </Button>
+          </Box>
+        )}
       </Box>
     </Box>
   );

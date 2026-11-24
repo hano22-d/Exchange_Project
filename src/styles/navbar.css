@@ -1,43 +1,53 @@
 .navbar-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: radial-gradient(circle at 20% 50%, #1a1a1a 0%, #0b0b0b 70%, #000000 100%);
-    padding: 0 2rem;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    border-bottom: 4px double rgba(250, 229, 110, 0.992);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  background: radial-gradient(
+    circle at 20% 50%,
+    #1a1a1a 0%,
+    #0b0b0b 70%,
+    #000000 100%
+  );
+  padding: 0.7rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-bottom: 4px double rgba(250, 229, 110, 0.992);
+  transition: padding 0.3s ease;
 }
 
 .navbar-links {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-left: 50px;
+  transition: gap 0.3s ease, margin-left 0.3s ease;
 }
 
 .navbar-links a {
-    color: rgba(250, 229, 110, 0.992);
-    text-decoration: none;
-    font-weight: 600;
-    font-family: 'Alyamama', sans-serif;
-    border: 2px solid rgba(250, 229, 110, 0.992);
-    padding: 0.3rem 1.2rem;
-    border-radius: 8px;
-    transition: all 0.3s ease-in-out;
-    background: transparent;
+  color: rgba(250, 229, 110, 0.992);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: "Alyamama", sans-serif;
+  border: 2px solid rgba(250, 229, 110, 0.992);
+  padding: 0.3rem 1.2rem;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: all 0.3s ease-in-out;
+  background: transparent;
 }
 
 .navbar-links a:hover {
-    background-color: rgba(250, 229, 110, 0.992);
-    color: #0b0b0b;
-    box-shadow: 0 0 15px rgba(250, 229, 110, 0.4);
-    transform: translateY(-2px);
+  background-color: rgba(250, 229, 110, 0.992);
+  color: #0b0b0b;
+  box-shadow: 0 0 15px rgba(250, 229, 110, 0.4);
+  transform: translateY(-2px);
 }
 
 .logo img {
-    height: 120px;
-    width: auto;
-    object-fit: contain;
+  object-fit: contain;
+  transition: height 0.3s ease;
 }

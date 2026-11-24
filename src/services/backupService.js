@@ -31,8 +31,10 @@ const APP_VERSION = packageInfo.version ?? "unknown";
 
 const WALLET_OPERATION_TYPES = new Set([
   "opening_balance",
-  "deposit",
   "withdrawal",
+  "deposit",
+  "external_in",
+  "external_out",
   "adjustment",
 ]);
 
