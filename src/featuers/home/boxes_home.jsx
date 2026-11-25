@@ -139,6 +139,7 @@ export default function Boxes({ cashboxes, loading, error }) {
                   >
                     <Typography
                       sx={{
+                        flexShrink: 0,
                         backgroundColor:
                           item.balance < 0 ? "#F44336" : "#00d443",
                         p: 0.7,
@@ -178,7 +179,8 @@ export default function Boxes({ cashboxes, loading, error }) {
                       <Typography
                         component="span"
                         sx={{
-                          fontSize: "inherit",
+                          flexShrink: 0,
+                          fontSize: { lg: "15px", md: "10px" },
                           color: "#e0e0e0",
                           fontWeight: 600,
                           letterSpacing: "0.3px",

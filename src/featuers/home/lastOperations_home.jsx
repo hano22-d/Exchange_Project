@@ -5,10 +5,13 @@ import {
   FaTriangleExclamation,
   FaScaleBalanced,
 } from "react-icons/fa6";
+import CancelIcon from "@mui/icons-material/Cancel";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { MdFactCheck, MdHistory } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../../app/App.css";
 import { formatSyriaDateTime } from "../../shared/utilsDate";
+import { useBackup } from "../../context/BackupContext";
 
 const cardColor = {
   exchange: {
@@ -62,6 +65,7 @@ export default function LastOper({
   operations = [],
   loading,
   error,
+  lastReconciliation,
 }) {
   // الصناديق الموجبة & السالبة
   const positiveBalance = cashboxes.filter(
@@ -69,6 +73,10 @@ export default function LastOper({
   ).length;
 
   const negativeBalance = cashboxes.length - positiveBalance;
+
+  const navigate = useNavigate();
+
+  const { lastBackupAt, connected } = useBackup();
 
   return (
     <Grid
@@ -341,30 +349,56 @@ export default function LastOper({
               </Typography>
 
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <FaCheckCircle style={{ color: "#00ff80" }} />
-                <Typography
-                  sx={{
-                    color: "#00ff80",
-                    fontFamily: "'Alyamama', sans-serif",
-                    mr: 0.5,
-                  }}
-                >
-                  الجرد مطابق تماما
-                </Typography>
+                {!lastReconciliation ? (
+                  <Typography>لم يتم إجراء أي جرد حتى الآن</Typography>
+                ) : lastReconciliation.status === "matched" ? (
+                  <>
+                    <FaCheckCircle style={{ color: "#00ff80" }} />
+                    <Typography
+                      sx={{
+                        color: "#00ff80",
+                        fontFamily: "'Alyamama', sans-serif",
+                      }}
+                    >
+                      مطابق تماماً
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <WarningAmberIcon
+                      sx={{
+                        color: "rgba(250, 229, 110, 0.992)",
+                        fontSize: 30,
+                        ml: 1,
+                      }}
+                    />
+                    <Typography
+                      sx={{
+                        color: "#ff5252",
+                        fontWeight: 600,
+                        fontFamily: "'Alyamama', sans-serif",
+                      }}
+                    >
+                      توجد {lastReconciliation.mismatchedCount} فروقات
+                    </Typography>
+                  </>
+                )}
               </Box>
             </Box>
 
             <Button
+              onClick={() => navigate("/inventory")}
               variant="outlined"
               sx={{
-                color: "#00ff80",
+                color: "rgba(250, 229, 110, 0.992)",
                 borderRadius: 2,
-                borderColor: "#00ff80",
+                borderColor: "rgba(250, 229, 110, 0.992)",
                 fontFamily: "'Alyamama', sans-serif",
                 fontSize: 10,
                 p: "7.5px 15px",
                 "&:hover": {
-                  backgroundColor: "#00ff802c",
+                  backgroundColor: "rgba(250, 229, 110, 0.992)",
+                  color: "#111",
                 },
               }}
             >
@@ -421,7 +455,7 @@ export default function LastOper({
                   fontWeight: "bold",
                 }}
               >
-                18:36 - 22/10/2026
+                {lastBackupAt?.split("T")[0] || ""}
               </Typography>
             </Box>
 
@@ -435,17 +469,21 @@ export default function LastOper({
               </Typography>
 
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <FaCheckCircle style={{ color: "#00ff80" }} />
                 <Typography
                   sx={{
-                    color: "#00ff80",
+                    color: connected ? "#00ff80" : "#ef4444",
                     fontFamily: "'Alyamama', sans-serif",
                     fontWeight: "bold",
-                    mr: 0.5,
+                    ml: 0.5,
                   }}
                 >
-                  محفوظة بنجاح
+                  {connected ? "الاتصال مفتوح" : "الاتصال منقطع"}
                 </Typography>
+                {connected ? (
+                  <FaCheckCircle style={{ color: "#00ff80" }} />
+                ) : (
+                  <CancelIcon sx={{ color: "#ef4444" }} />
+                )}
               </Box>
             </Box>
           </Card>

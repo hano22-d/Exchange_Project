@@ -1,9 +1,8 @@
-import openDatabase from "../db/database";
-import { waitForTransactionCompletion } from "../db/transaction";
+import { runInTransaction } from "../db/transaction";
 import cashboxRepository from "../repositories/cashboxrepository";
 import { markBackupDirty } from "./backupSchedulerService";
 
-/* ======================================= 
+/* =======================================
    دوال تصفية والتحقق من مدخلات الواجهة
    ======================================= */
 
@@ -49,37 +48,33 @@ function validatCashboxForm(normalizedData) {
   return normalizedData;
 }
 
-/* =======================================
+/* ======================================
     دوال العمليات الاساسية على الصناديق
-    ====================================== */
+   ====================================== */
 
 // ========== دالة قراءة الصناديق =========== //
 async function getAllCashboxesService() {
-  const db = await openDatabase();
-  const transaction = db.transaction(["cashboxes"], "readonly");
-
-  return await cashboxRepository.getAllCashboxes(transaction);
+  return runInTransaction(["cashboxes"], "readonly", (tx) =>
+    cashboxRepository.getAllCashboxes(tx)
+  );
 }
 
 // ========== دالة قراءة صندوق حسب العملة ========== //
 async function getCashboxByCurrencyService(currency) {
-  const db = await openDatabase();
-  const transaction = db.transaction(["cashboxes"], "readonly");
-
-  return await cashboxRepository.getCashboxByCurrency(transaction, currency);
+  return runInTransaction(["cashboxes"], "readonly", (tx) =>
+    cashboxRepository.getCashboxByCurrency(tx, currency)
+  );
 }
 
 // ========= دالة إضافة صندوق ======== //
 async function addCashboxService(newCashbox) {
-  const db = await openDatabase();
-  const transaction = db.transaction(["cashboxes"], "readwrite");
-
+  // نتحقق من المدخلات قبل فتح Transaction، لأنها لا تحتاج إلى قاعدة البيانات.
   const normalizedCashbox = normalizedCashboxForm(newCashbox);
   validatCashboxForm(normalizedCashbox);
 
-  await cashboxRepository.addCashbox(transaction, normalizedCashbox);
-
-  await waitForTransactionCompletion(transaction);
+  await runInTransaction(["cashboxes"], "readwrite", async (tx) => {
+    await cashboxRepository.addCashbox(tx, normalizedCashbox);
+  });
 
   markBackupDirty("created-cashbox");
 
@@ -88,16 +83,13 @@ async function addCashboxService(newCashbox) {
 
 // ============ دالة تعطيل / تفعيل صندوق ========== //
 async function setCashboxActiveService(currency, active) {
-  const db = await openDatabase();
-  const transaction = db.transaction(["cashboxes"], "readwrite");
-
   if (typeof active !== "boolean") {
     throw new Error("قيمة التفعيل غير صالحة");
   }
 
-  await cashboxRepository.setCashboxActive(transaction, currency, active);
-
-  await waitForTransactionCompletion(transaction);
+  await runInTransaction(["cashboxes"], "readwrite", (tx) =>
+    cashboxRepository.setCashboxActive(tx, currency, active)
+  );
 
   markBackupDirty("Disable-cashbox");
 }
@@ -108,4 +100,5 @@ const cashboxService = {
   addCashboxService,
   setCashboxActiveService,
 };
+
 export default cashboxService;

@@ -1,6 +1,4 @@
-import openDatabase from "../db/database.js";
-
-import { waitForTransactionCompletion } from "../db/transaction.js";
+import { runInTransaction } from "../db/transaction.js";
 
 import {
   getTimestampFromDateTimeLocal,
@@ -16,41 +14,6 @@ import { markBackupDirty } from "./backupSchedulerService.js";
 // =========== إعدادات الخدمة ============= //
 const EXCHANGES_STORE = "exchanges";
 const CASHBOXES_STORE = "cashboxes";
-
-// ============== إدارة المعاملات ============= //
-async function runInTransaction(storeNames, mode, operation) {
-  const db = await openDatabase();
-
-  const tx = db.transaction(storeNames, mode);
-
-  // نراقب اكتمال المعاملة فور إنشائها.
-  const completion = waitForTransactionCompletion(tx);
-
-  /* في المسار الرئيسي await completion نتجنب رفضًا غير معالج إذا أُجهضت المعاملة قبل الوصول إلى */
-  completion.catch(() => {});
-
-  try {
-    const result = await operation(tx);
-
-    // ننتظر اكتمال المعاملة بأكملها.
-    await completion;
-
-    return result;
-  } catch (error) {
-    // قد تكون المعاملة أُجهضت بالفعل.
-    // لذلك نحاول إجهاضها مع تجاهل خطأ abort إن كانت قد انتهت.
-    try {
-      tx.abort();
-    } catch {
-      // لا حاجة لتنفيذ شيء هنا
-    }
-
-    // ننتظر انتهاء المعاملة قبل تمرير الخطأ
-    await completion.catch(() => {});
-
-    throw error;
-  }
-}
 
 // ============= تطبيع بيانات حركة الصرف ============== //
 function normalizeExchangeInput(input) {
@@ -323,8 +286,9 @@ export async function queryExchangesService(filters = {}, pagination = {}) {
   // ====================================
 
   const dateRange = resolveTimestampDateRange(filters);
+
   // ====================================
-  //  تطبيع بقية الفلاتر
+  // تطبيع بقية الفلاتر
   // ====================================
 
   const repositoryFilters = {
@@ -344,7 +308,7 @@ export async function queryExchangesService(filters = {}, pagination = {}) {
   };
 
   // ====================================
-  //  إعداد Pagination للـ Repository
+  // إعداد Pagination للـ Repository
   // ====================================
 
   const repositoryPagination = {
@@ -353,7 +317,7 @@ export async function queryExchangesService(filters = {}, pagination = {}) {
   };
 
   // ====================================
-  //  تنفيذ الاستعلام
+  // تنفيذ الاستعلام
   // ====================================
 
   return runInTransaction([EXCHANGES_STORE], "readonly", (tx) =>
@@ -398,7 +362,7 @@ export async function createExchangeService(formData) {
         updatedAt: now,
       };
 
-      //الخاص به id اضافة سجل الحركة والحصول على
+      // إضافة سجل الحركة والحصول على id الخاص به
       const createdExchangeID = await exchangeRpository.addExchange(
         tx,
         newExchange

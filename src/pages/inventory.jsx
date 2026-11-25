@@ -4,6 +4,8 @@ import { useState } from "react";
 import useCashboxces from "../hooks/cashbox_Hooks/usecashboxes";
 import SuccessMatching from "../featuers/inventory/successDialog_inventory";
 import FailedMatching from "../featuers/inventory/failedDialog_inventory";
+import useReconceBalance from "../hooks/utilsHooks/useReconceBalance";
+import { useReconciliation } from "../context/ReconcilliationContext";
 
 export default function Inventory() {
   const primary = "rgba(250,229,110,0.992)";
@@ -67,14 +69,15 @@ export default function Inventory() {
   const [currenciesForm, setCurrenciesForm] = useState({});
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openFailed, setOpenFailed] = useState(false);
-  const [mismatchedBalances, setMismatchedBalances] = useState([]);
 
   // ==== services ==== //
   const { cashboxes } = useCashboxces();
+  // خدمة حساب مطابقة الارصدة
+  const { mismatchedBalances, reconcileBalances } =
+    useReconceBalance(cashboxes);
+  const { saveReconciliation } = useReconciliation();
 
   // ==== functions ==== //
-
-  // دالة جمع قيم المدخلات
   function handleInputOnchange(event) {
     const { name, value } = event.target;
 
@@ -83,56 +86,40 @@ export default function Inventory() {
     });
   }
 
-  function roundBalance(value) {
-    return Number(Number(value).toFixed(2));
-  }
+  //دالة حساب الجرد
+  function handleReconcile() {
+    const result = reconcileBalances(currenciesForm);
 
-  //دالة التحقق من مطابقة الارصدة
-  function reconcileBalances() {
-    const mismatches = [];
+    // لم تكتمل عملية التحميل أو لا توجد صناديق
+    if (result.status !== "completed") {
+      return;
+    }
 
-    for (let i = 0; i < cashboxes.length; i++) {
-      const cashbox = cashboxes[i];
+    try {
+      saveReconciliation(result);
 
-      const enteredBalance = currenciesForm[cashbox.currency];
-
-      const hasEnteredValue =
-        enteredBalance !== undefined && String(enteredBalance).trim() !== "";
-
-      const actualBalance = roundBalance(cashbox.balance);
-
-      const formBalance = hasEnteredValue ? roundBalance(enteredBalance) : null;
-
-      const isValidBalance =
-        formBalance !== null && Number.isFinite(formBalance);
-
-      if (!isValidBalance || formBalance !== actualBalance) {
-        const balanceDifference = isValidBalance
-          ? Number((actualBalance - formBalance).toFixed(2))
-          : null;
-
-        const mismatchData = {
-          currency: cashbox.currency,
-          currencyName: cashbox.currencyNameAr,
-          balance: cashbox.balance,
-          formBalance: enteredBalance ?? "",
-          difference: balanceDifference,
-        };
-
-        mismatches.push(mismatchData);
+      if (result.matched) {
+        setOpenFailed(false);
+        setOpenSuccess(true);
+      } else {
+        setOpenSuccess(false);
+        setOpenFailed(true);
       }
-    }
-
-    setMismatchedBalances(mismatches);
-
-    if (mismatches.length === 0) {
-      setOpenFailed(false);
-      setOpenSuccess(true);
-    } else {
-      setOpenSuccess(false);
-      setOpenFailed(true);
+    } catch (error) {
+      console.error(error);
+      // اعرض رسالة تعذر حفظ نتيجة الجرد
     }
   }
+
+  // التحقق من تعبئة كل الحقول
+  const areAllFieldsFilled =
+    cashboxes.length > 0 &&
+    cashboxes.every((cashbox) => {
+      const val = currenciesForm[cashbox.currency];
+      if (val === undefined || val === null) return false;
+      const trimmed = String(val).trim();
+      return trimmed !== "" && Number.isFinite(Number(trimmed));
+    });
 
   return (
     <>
@@ -187,13 +174,13 @@ export default function Inventory() {
         >
           <Grid container rowSpacing={1} columnSpacing={3} sx={{ my: 1 }}>
             {cashboxes.map((cashbox) => (
-              <Grid size={4} sx={gridStyle}>
+              <Grid key={cashbox.currency} size={4} sx={gridStyle}>
                 <Typography
                   sx={fieldLabelStyle}
                 >{`${cashbox.currency} - ${cashbox.currencyNameAr}`}</Typography>
                 <TextField
                   name={cashbox.currency}
-                  value={currenciesForm[cashbox.currency]}
+                  value={currenciesForm[cashbox.currency] ?? ""}
                   onChange={handleInputOnchange}
                   size="small"
                   type="number"
@@ -218,13 +205,18 @@ export default function Inventory() {
           </Grid>
           <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
             <Button
+              onClick={handleReconcile}
+              disabled={!areAllFieldsFilled}
               variant="contained"
-              onClick={reconcileBalances}
               sx={{
                 color: textColor,
                 backgroundColor: primary,
                 fontFamily,
                 fontSize: 15,
+                "&.Mui-disabled": {
+                  backgroundColor: "rgba(250, 229, 110, 0.25)",
+                  color: "rgba(255, 255, 255, 0.45)",
+                },
               }}
             >
               مطابقة مع الصناديق

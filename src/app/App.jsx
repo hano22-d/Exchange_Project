@@ -7,7 +7,6 @@ import { LicenseGate } from "../licensing/components/LicenseGate";
 
 function App() {
   return (
-    <>
       <LicenseProvider>
         <LicenseGate>
           <AppProvider>
@@ -15,7 +14,6 @@ function App() {
           </AppProvider>
         </LicenseGate>
       </LicenseProvider>
-    </>
   );
 }
 

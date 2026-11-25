@@ -15,6 +15,8 @@ import useTransfers from "../hooks/transfer_Hooks/useTransfers";
 import useDebts from "../hooks/debt_hooks/useDebts";
 import useTodayDateRange from "../hooks/utilsHooks/useTodayDateRange";
 import useLatestOperations from "../hooks/utilsHooks/useLatestOperations";
+import { useReconciliation } from "../context/ReconcilliationContext";
+
 
 export default function Home() {
   //حالة فتح وإقلاق dialog
@@ -33,7 +35,6 @@ export default function Home() {
     dateFromTimestamp,
     dateToExclusiveTimestamp,
   };
-
   // جلب اخر خمس عمليات
   const {
     operations: lastOperations,
@@ -49,6 +50,8 @@ export default function Home() {
   const { totalItems: exchangeTotalItems = 0 } = useExchanges(todayFilters);
   const { totalItems: transferTotalItems = 0 } = useTransfers(todayFilters);
   const { debts = [] } = useDebts(todayFilters);
+  // اخر جرد
+  const { lastReconciliation } = useReconciliation();
 
   // دالة إضافة صندوق
   async function createCashbox(currency, balance) {
@@ -163,6 +166,7 @@ export default function Home() {
           operations={lastOperations}
           loading={lastOperationsLoading}
           error={lastOperationsError}
+          lastReconciliation={lastReconciliation}
         />
       </Box>
     </Box>

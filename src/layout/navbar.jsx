@@ -37,6 +37,7 @@ function Navbar({ onToggleSidebar, open }) {
         onClick={backupNow}
         variant="contained"
         sx={{
+          flexShrink: 0,
           minWidth: 0,
           width: 42,
           height: 42,

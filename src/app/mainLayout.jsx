@@ -64,7 +64,7 @@ export default function MainLayout() {
         <Navbar onToggleSidebar={() => setOpen((prev) => !prev)} open={open} />
 
         <Box component="main" sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Outlet />
+          <Outlet/>
         </Box>
       </Box>
     </Box>
